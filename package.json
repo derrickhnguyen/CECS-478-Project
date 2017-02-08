@@ -1,0 +1,19 @@
+{
+  "name": "cecs-478-project",
+  "version": "1.0.0",
+  "description": "Semester Project for CECS 478",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/derrickhnguyen/CECS-478-Project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/derrickhnguyen/CECS-478-Project/issues"
+  },
+  "homepage": "https://github.com/derrickhnguyen/CECS-478-Project#readme"
+}
