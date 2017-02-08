@@ -11,7 +11,8 @@ http.createServer((req, res) => {
 		'Content-Type': 'text/html; charset=utf-8',
 	});
 
-	res.write('<h1>Mining for Goldstein!');
+	res.write('<h1>Mining for Goldstein!</h1>');
+	res.end();
 }).listen(port, host);
 
 console.log(`App running at http://${host}:${port}`);
