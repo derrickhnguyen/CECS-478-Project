@@ -10,7 +10,11 @@ http.createServer((req, res) => {
     'Content-Type': 'text/html; charset=utf-8',
   });
 
+  res.write('<section style="text-align:center">');
   res.write('<h1>Mining for Goldstein!</h1>');
+  res.write('<h1>Mike Black and Derrick Nguyen</h1>');
+  res.write('<h1>CECS 478</h1>');
+  res.write('</section');
   res.end();
 
 }).listen(port, host);
