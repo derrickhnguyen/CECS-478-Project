@@ -1,19 +1,17 @@
 {
   "name": "cecs-478-project",
-  "version": "1.0.0",
-  "description": "Semester Project for CECS 478",
-  "main": "index.js",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./bin/www"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/derrickhnguyen/CECS-478-Project.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/derrickhnguyen/CECS-478-Project/issues"
-  },
-  "homepage": "https://github.com/derrickhnguyen/CECS-478-Project#readme"
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "cookie-parser": "^1.4.3",
+    "debug": "~2.6.0",
+    "express": "~4.14.1",
+    "jade": "^1.11.0",
+    "morgan": "^1.7.0",
+    "serve-favicon": "~2.3.2"
+  }
 }
