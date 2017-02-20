@@ -4,7 +4,8 @@ var encryptor = require('../backend/crypto');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  encryptor("my message", "backend/keys/public/public-key-1");
+  var encryptedObj = encryptor("my message", "backend/keys/public/public-key-1");
+  console.log(encryptedObj);
   res.render('index', { title: 'Mining for Goldstein' });
 });
 
