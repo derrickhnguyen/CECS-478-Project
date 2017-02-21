@@ -14,8 +14,9 @@ let fs = require("fs");
 */
 let encryptor = function encryptor(message, publicKeyPath) {
   const AESKey = CryptoNode.randomBytes(32).toString('hex');
+  const IV = CryptoNode.randomBytes(16).toString('hex');
 
-  let AESObj = AES.encrypt(message, AESKey);
+  let AESObj = AES.encrypt(message, AESKey, {IV: IV});
   let AESCipherText = AESObj.ciphertext.toString();
 
   let SHA256Key = CryptoNode.randomBytes(32).toString('hex');
