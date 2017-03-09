@@ -32,7 +32,7 @@ let encryptor = function encryptor(message, publicKeyPath) {
   let concatenatedKey = AESKey + SHA256Key;
 
   // Loads the RSA key.
-  let RSAKeyText = fs.readFileSync(publicKeyPath, 'utf8', function(err, datta) {
+  let RSAKeyText = fs.readFileSync(publicKeyPath, 'utf8', function(err, data) {
     if(err) {
       return console.log(err);
     }
