@@ -9,7 +9,7 @@ const requireSignin = passport.authenticate('local', { session: false });
 const requireAuth = passport.authenticate('jwt', { session: false });
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/', requireAuth, function(req, res, next) {
   res.render('index', { title: 'Mining for Goldstein' });
 });
 
