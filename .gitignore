@@ -1,3 +1,6 @@
+# Secrets
+backend/config.js
+
 # Logs
 logs
 *.log

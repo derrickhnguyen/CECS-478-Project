@@ -1,22 +1,19 @@
-var express = require('express');
-var router = express.Router();
-var encryptorAndDecryptor = require('../crypto');
+const express = require('express');
+const router = express.Router();
+const capsulator = require('../crypto');
+const Authentication = require('../controllers/authentication');
+const passportService = require('../services/passport');
+const passport = require('passport');
+
+const requireSignin = passport.authenticate('local', { session: false });
+const requireAuth = passport.authenticate('jwt', { session: false });
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  var encryptedObj = encryptorAndDecryptor.encryptor("my message", "backend/keys/public/public");
-  var decryptedMsg = encryptorAndDecryptor.decryptor(encryptedObj, "backend/keys/private/private");
-  console.log("Encrypted Message: " + encryptedObj);
-  console.log("Decrypted Message: " + decryptedMsg);
   res.render('index', { title: 'Mining for Goldstein' });
 });
 
-router.get('/message', function(req, res, next) {
-
-});
-
-router.post('/message', function(req, res, next) {
-
-});
+router.post('/signin', requireSignin, Authentication.signin);
+router.post('/signup', Authentication.signup);
 
 module.exports = router;
