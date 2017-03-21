@@ -1,25 +1,18 @@
 const Chat = require('../models/chat');
+const Message = require('../models/message');
+const User = require('.//models/user');
 
-exports.getChat = function(req, res, next) {
-  
-};
+// Gets chat between two users
+exports.getChat((req, res, next) => {
 
-exports.postChat = function(req, res, next) {
-  const senderID = req.body.senderID;
-  const receiverID = req.body.receiverID;
-  const timestamp = req.body.timestamp;
-  const isRead = req.body.isRead;
-  const encryptedObj = req.body.encryptedObj;
+});
 
-  const chat = new Chat({
-    senderID: senderID,
-    receiverID: receiverID,
-    timestampt: timestamp,
-    isRead: isRead,
-    encryptedObj: encryptedObj
-  })
+// Updates chat between two users
+exports.putChat((req, res, next) => {
 
-  chat.save(function(err) {
-    if(err) return next(err);
-  });
-};
+});
+
+// Creates new chat between two users
+exports.postChat((req, res, next) => {
+
+});

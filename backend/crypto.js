@@ -12,7 +12,7 @@ const fs = require("fs");
 * @param   {String} path
 * @return  {JSON}
 */
-exports.encryptor = function encryptor(message, publicKeyPath) {
+exports.encryptor = (message, publicKeyPath) => {
 
   // Generates random 32 and 16 byte keys for AES and IV, respectively.
   const AESKey = CryptoNode.randomBytes(32).toString('hex');
@@ -32,7 +32,7 @@ exports.encryptor = function encryptor(message, publicKeyPath) {
   const concatenatedKey = AESKey + SHA256Key;
 
   // Loads the RSA key.
-  const RSAKeyText = fs.readFileSync(publicKeyPath, 'utf8', function(err, data) {
+  const RSAKeyText = fs.readFileSync(publicKeyPath, 'utf8', (err, data) => {
     if(err) {
       return console.log(err);
     }
@@ -65,7 +65,7 @@ exports.encryptor = function encryptor(message, publicKeyPath) {
 * @param {JSON}   encryptJSONObj
 * @param {String} privateKeyPath
 */
-exports.decryptor = function decryptor(encryptJSONObj, privateKeyPath) {
+exports.decryptor = (encryptJSONObj, privateKeyPath) => {
 
   // Parse out information from object.
   const encryptObj = JSON.parse(encryptJSONObj);
@@ -75,7 +75,7 @@ exports.decryptor = function decryptor(encryptJSONObj, privateKeyPath) {
   const SHA256OldTag = encryptObj.hmacTag;
 
   // Load RSA key.
-  const RSAKeyText = fs.readFileSync(privateKeyPath, 'utf8', function(err, datta) {
+  const RSAKeyText = fs.readFileSync(privateKeyPath, 'utf8', (err, datta) => {
     if(err) {
       return console.log(err);
     }
