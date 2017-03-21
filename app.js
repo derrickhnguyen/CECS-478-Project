@@ -9,7 +9,14 @@ var mongoose = require('mongoose');
 var app = express();
 
 // DB Setup
-mongoose.connect('mongodb://localhost:/auth/auth');
+mongoose.connect('mongodb://localhost:/chat');
+mongoose.connection
+  .once('open', function() {
+    console.log('Database good to go!');
+  })
+  .on('error', function(error) {
+    console.warn('Warning', error);
+  });
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
