@@ -1,7 +1,5 @@
-const mongoose = require('mongoose');
 const Chat = require('../models/chat');
 const Message = require('../models/message');
-const User = require('../models/user');
 
 /*
 * Creates a new chat into the database.
@@ -13,29 +11,33 @@ const User = require('../models/user');
 const createNewChat = (res, messageObj, thisUserID) => {
   const chatID = [thisUserID, messageObj.otherUserID].sort().join(":");
 
-  // Check database to see if the chatID already exists.
+  // Check database to see if the Chat Object already exists
+  // based on the chadID.
   Chat.findOne({ chatID: chatID }, (err, chat) => {
+    // Send 500 status if there is an error.
     if(err)
       res.status(500).send({ error: err });
 
     // Do not create a new chat if chat already exists.
     if(chat)
-      res.status(422).send("Chat already exists");
+      res.status(422).send("This Chat already exists.");
 
     // If chat does not exist, create a new chat with a message.
     else {
-      // New Chat object
+      // Create a new Chat object.
       const newChat = new Chat({
         chatID: chatID,
         users: [thisUserID, messageObj.otherUserID]
       });
 
-      // Saves new chat into database, then calls callback
+      // Save the new Chat object into the database, and then
+      // invoke the callback function.
       newChat.save((err) => {
+        // Send 500 status if there is an error.
         if(err) 
           res.status(500).send({ error: err });
 
-        // New Message object of first message in chat
+        // Create a new Message object.
         const firstMessage = new Message({
           _creator: newChat._id,
           senderID: thisUserID,
@@ -45,18 +47,24 @@ const createNewChat = (res, messageObj, thisUserID) => {
           message: JSON.stringify(messageObj.message)
         });
 
-        // Save the new message into the database, then calls callback
+        // Save the new Message object into the database, and then
+        // invoke the callback function.
         firstMessage.save((err) => {
+          // Send 500 status if there is an error.
           if(err)
             res.status(500).json({ error: err });
           
-          // If no errors, push new message into the chat.
+          // Push the new Message object into the newly created
+          // Chat object's message array, and then save the Chat
+          // Object.
           newChat.messages.push(firstMessage);
           newChat.save((err) => {
+            // Send 500 status if there is an error.
             if(err)
-              res.status(500).send("Unable to create new chat");
+              res.status(500).send({ error: err });
 
-            res.status(201).send("New Chat created successfully");
+            // Send 201 status to show Chat creation was successful.
+            res.status(201).send("New Chat created successfully with message");
           });
         });
       });
@@ -67,13 +75,14 @@ const createNewChat = (res, messageObj, thisUserID) => {
 /*
 * Gets chat between two users.
 * 
-* @param   {Object}   res
+* @param   {Object}   req
 * @param   {Object}   res
 * @return  {Function} next
 */
 exports.getChat = (req, res, next) => {
   // Check if user is verified.
   if(req.user) {
+    // Get users' ID to create chadID.
     const thisUserID = req.user._id;
     const otherUserID = req.params.otherUserID;
     const chatID = [thisUserID, otherUserID].sort().join(":");
@@ -95,19 +104,32 @@ exports.getChat = (req, res, next) => {
   }
 };
 
-// Updates chat between two users
+/*
+* Puts new message into chat between two users.
+* 
+* @param   {Object}   req
+* @param   {Object}   res
+* @return  {Function} next
+*/
 exports.putChat = (req, res, next) => {
+  // Check if user is verified.
   if(req.user) {
+    // Get users' ID to create chadID.
     const thisUserID = req.user._id;
     const otherUserID = req.body.otherUserID;
     const chatID = [thisUserID, otherUserID].sort().join(":");
-    console.log("chatID: " + chatID);
 
+    // Check database to see if the Chat Object already exists
+    // based on the chadID.
     Chat.findOne({ chatID: chatID }, (err, chat) => {
+      // Send 500 status if there is an error.
       if(err)
         res.status(500).send({ error: err });
 
+      // If there exists a chat, insert the new message into
+      // that Chat object.
       if(chat) {
+        // Create a new Message object.
         const newMessage = new Message({
           _create: chat._id,
           senderID: thisUserID,
@@ -117,35 +139,51 @@ exports.putChat = (req, res, next) => {
           message: JSON.stringify(req.body.message)
         });
 
+        // Save the new Message object into the database, and then
+        // invoke the callback function.
         newMessage.save((err) => {
+          // Send 500 status if there is an error.
           if(err)
             res.status(500).send({ error: err });
 
+          // Call a static function in the Chat model to find the
+          // Chat object and pushes the new message into the Chat's
+          // object messages array. Then, invoke the callback
+          // function.
           Chat.findOneAndUpdate(
             { chatID: chatID },
             { $push: {"messages": newMessage} },
             { safe: true, upsert: true, new: true },
             function(err, chat) {
+              // Send 500 status if there is an error.
               if(err)
                 res.status(500).send({ error: err });
             });
         });
         
-        res.status(200).send("Good");
+        // Send 201 status to show message insertion was successful.
+        res.status(201).send("New message successfully saved to chat");
       }
       else
+        // Send 422 status to indicate that Chat object was not found.
         res.status(422).send({ error: 'Could not find chat' });
     });
   }
 };
 
-// Creates new chat between two users
+/*
+* Creates new chat between two users.
+* 
+* @param   {Object}   req
+* @param   {Object}   res
+* @return  {Function} next
+*/
 exports.postChat = (req, res, next) => {
-  // Check if user is verified
+  // Check if user is verified.
   if(req.user) {
     const thisUserID = req.user._id;
     
-    // Extract encrypted message object from request
+    // Extract message object from request.
     const messageObj = req.body;
 
     if(!messageObj)
