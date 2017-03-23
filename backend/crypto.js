@@ -13,7 +13,6 @@ const fs = require("fs");
 * @return  {JSON}
 */
 exports.encryptor = (message, publicKeyPath) => {
-
   // Generates random 32 and 16 byte keys for AES and IV, respectively.
   const AESKey = CryptoNode.randomBytes(32).toString('hex');
   const IV = CryptoNode.randomBytes(16).toString('hex');
@@ -54,7 +53,6 @@ exports.encryptor = (message, publicKeyPath) => {
   };
 
   return JSON.stringify(returnObj);
-
 }
 
 /*
@@ -66,7 +64,6 @@ exports.encryptor = (message, publicKeyPath) => {
 * @param {String} privateKeyPath
 */
 exports.decryptor = (encryptJSONObj, privateKeyPath) => {
-
   // Parse out information from object.
   const encryptObj = JSON.parse(encryptJSONObj);
   const AESObjString = encryptObj.aesObjString;
@@ -106,5 +103,4 @@ exports.decryptor = (encryptJSONObj, privateKeyPath) => {
   } else {
     throw 'Unable to decrypt message!';
   }
-
 }
