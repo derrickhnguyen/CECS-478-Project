@@ -18,31 +18,37 @@ mongoose.connection
     console.warn('Warning', error);
   });
 
-// View engine setup
+// View engine setup.
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+// HTTP request logger middleware.
 app.use(logger('combined'));
-app.use(bodyParser.json({ type: '*/*' }));
+
+// Parses all request body as json type.
+// Only objects with key-value pairs will be accepted.
+app.use(bodyParser.json({ type: '*/*' })); 
 app.use(bodyParser.urlencoded({ extended: false }));
+
+// Cookie parser middleware.
 app.use(cookieParser());
 
 app.use('/', router);
 
-// catch 404 and forward to error handler
+// Catch 404 and forward to error handler.
 app.use((req, res, next) => {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
-// error handler
+// Error handler.
 app.use((err, req, res, next) => {
-  // set locals, only providing error in development
+  // Set locals, only providing error in development.
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
+  // Render the error page.
   res.status(err.status || 500);
   res.render('error');
 });
