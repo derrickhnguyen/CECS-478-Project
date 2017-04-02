@@ -10,7 +10,6 @@ const Crypto = require('../crypto');
 
 const Authentication = require('../controllers/authentication');
 const Chat = require('../controllers/chat');
-const User = require('../controllers/user');
 
 /* Testing Route */
 router.get('/',  requireAuth, () => {
