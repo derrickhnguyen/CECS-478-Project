@@ -12,9 +12,8 @@ const Authentication = require('../controllers/authentication');
 const Chat = require('../controllers/chat');
 const User = require('../controllers/user');
 
-router.get("/", requireAuth, (req, res, next) => {
-  const encryptedMessage = Crypto.encryptor("I'm doing good Derrick, how are you!", "backend/keys/public/public");
-  console.log(encryptedMessage);
+router.get('/',  requireAuth, () => {
+  res.send('Inside home directory');
 });
 
 /* POST email and password to sign in. */
