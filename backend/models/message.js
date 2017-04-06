@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
 const messageSchema = new Schema({
   _creator    : { type: Schema.Types.ObjectId, ref: 'chat' },
@@ -8,8 +8,8 @@ const messageSchema = new Schema({
   timestamp   : { type: Date, default: Date.now, required: true },
   isRead      : { type: Boolean, required: true },
   message     : { type: String, required: true }
-});
+})
 
-const Message = mongoose.model('message', messageSchema);
+const Message = mongoose.model('message', messageSchema)
 
-module.exports = Message;
+module.exports = Message
