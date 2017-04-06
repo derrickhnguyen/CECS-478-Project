@@ -19,8 +19,8 @@ const createNewChat = (res, messageObj, thisUserID) => {
       res.status(500).send({ error: err });
 
     // Do not create a new chat if chat already exists.
-    if(chat)
-      res.status(422).send("This Chat already exists.");
+    else if(chat)
+      res.status(422).send({error: "This Chat already exists."});
 
     // If chat does not exist, create a new chat with a message.
     else {
@@ -37,36 +37,40 @@ const createNewChat = (res, messageObj, thisUserID) => {
         if(err) 
           res.status(500).send({ error: err });
 
-        // Create a new Message object.
-        const firstMessage = new Message({
-          _creator: newChat._id,
-          senderID: thisUserID,
-          receiverID: messageObj.otherUserID,
-          timeStamp: Date.now(),
-          isRead: false,
-          message: JSON.stringify(messageObj.message)
-        });
+        else {
+          // Create a new Message object.
+          const firstMessage = new Message({
+            _creator: newChat._id,
+            senderID: thisUserID,
+            receiverID: messageObj.otherUserID,
+            timeStamp: Date.now(),
+            isRead: false,
+            message: JSON.stringify(messageObj.message)
+          });
 
-        // Save the new Message object into the database, and then
-        // invoke the callback function.
-        firstMessage.save((err) => {
-          // Send 500 status if there is an error.
-          if(err)
-            res.status(500).json({ error: err });
-          
-          // Push the new Message object into the newly created
-          // Chat object's message array, and then save the Chat
-          // Object.
-          newChat.messages.push(firstMessage);
-          newChat.save((err) => {
+          // Save the new Message object into the database, and then
+          // invoke the callback function.
+          firstMessage.save((err) => {
             // Send 500 status if there is an error.
             if(err)
-              res.status(500).send({ error: err });
+              res.status(500).json({ error: err });
+            
+            else {
+              // Push the new Message object into the newly created
+              // Chat object's message array, and then save the Chat
+              // Object.
+              newChat.messages.push(firstMessage);
+              newChat.save((err) => {
+                // Send 500 status if there is an error.
+                if(err)
+                  res.status(500).send({ error: err });
 
-            // Send 201 status to show Chat creation was successful.
-            res.status(201).send("New Chat created successfully with message");
+                // Send 201 status to show Chat creation was successful.
+                res.status(201).send("New Chat created successfully with message");
+              });              
+            }
           });
-        });
+        }
       });
     }
   });
@@ -116,8 +120,11 @@ exports.putChat = (req, res, next) => {
   if(req.user) {
     // Get users' ID to create chadID.
     const thisUserID = req.user._id;
+    console.log("This User: " + thisUserID);
     const otherUserID = req.body.otherUserID;
+    console.log("Other User: " + otherUserID);
     const chatID = [thisUserID, otherUserID].sort().join(":");
+    console.log("Chat ID: " + chatID);
 
     // Check database to see if the Chat Object already exists
     // based on the chadID.
@@ -189,12 +196,15 @@ exports.postChat = (req, res, next) => {
     if(!messageObj)
       res.status(422).send({ error: 'Message must be provided' });
 
-    if(!messageObj.otherUserID)
+    else if(!messageObj.otherUserID)
       res.status(422).send({ error: 'Message must be sent to another user' });
 
-    if(!messageObj.message)
+    else if(messageObj.otherUserID == thisUserID)
+      res.status(422).send({ error: 'Chat must be with two people' });
+
+    else if(!messageObj.message)
       res.status(422).send({ error: 'Message must be provided' });
 
-    createNewChat(res, messageObj, thisUserID);
+    else createNewChat(res, messageObj, thisUserID);
   }
 };

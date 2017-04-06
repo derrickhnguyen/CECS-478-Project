@@ -12,8 +12,9 @@ const Authentication = require('../controllers/authentication');
 const Chat = require('../controllers/chat');
 
 /* Testing Route */
-router.get('/',  requireAuth, () => {
-  res.send('Inside home directory');
+router.get('/',  requireAuth, (req, res, next) => {
+  const encryptedObj = Crypto.encryptor("Hey Derrick, I'm doing good. Thanks man!", "backend/keys/public/public");
+  console.log(encryptedObj);
 });
 
 /* POST email and password to sign in. */
