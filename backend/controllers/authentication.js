@@ -21,17 +21,20 @@ exports.signup = (req, res, next) => {
   const password = req.body.password
 
   // Validate that both email and password are present.
-  if (!email || !password)
+  if (!email || !password) {
     return res.status(422).send({ error: 'You must provide email and password' })
+  }
 
   // See if a user with the given email exists.
   User.findOne({ email: email }, (err, existingUser) => {
-    if (err) 
+    if (err) {
       return next(err)
+    }
 
     // If a user with email does exist, return an error.
-    if (existingUser) 
+    if (existingUser) {
       return res.status(422).send({ error: 'Email is in use' })
+    }
 
     // If a user with email does NOT exist, create and save user record.
     const user = new User({
@@ -42,8 +45,9 @@ exports.signup = (req, res, next) => {
     })
 
     user.save((err) => {
-      if (err) 
+      if (err) {
         return next(err)
+      }
 
       // Respond to request indicating the user was created.
       res.json({ token: tokenForUser(user) })

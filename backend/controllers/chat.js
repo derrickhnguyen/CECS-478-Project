@@ -15,15 +15,13 @@ const createNewChat = (res, messageObj, thisUserID) => {
   // based on the chadID.
   Chat.findOne({ chatID: chatID }, (err, chat) => {
     // Send 500 status if there is an error.
-    if (err)
+    if (err) {
       res.status(500).send({ error: err })
-
-    // Do not create a new chat if chat already exists.
-    else if (chat)
+    } else if (chat) {
+      // Do not create a new chat if chat already exists.
       res.status(422).send({error: "This Chat already exists."})
-
-    // If chat does not exist, create a new chat with a message.
-    else {
+    } else {
+      // If chat does not exist, create a new chat with a message.
       // Create a new Chat object.
       const newChat = new Chat({
         chatID: chatID,
@@ -34,10 +32,9 @@ const createNewChat = (res, messageObj, thisUserID) => {
       // invoke the callback function.
       newChat.save((err) => {
         // Send 500 status if there is an error.
-        if (err) 
+        if (err) {
           res.status(500).send({ error: err })
-
-        else {
+        } else {
           // Create a new Message object.
           const firstMessage = new Message({
             _creator: newChat._id,
@@ -52,22 +49,21 @@ const createNewChat = (res, messageObj, thisUserID) => {
           // invoke the callback function.
           firstMessage.save((err) => {
             // Send 500 status if there is an error.
-            if (err)
+            if (err) {
               res.status(500).json({ error: err })
-            
-            else {
+            } else {
               // Push the new Message object into the newly created
               // Chat object's message array, and then save the Chat
               // Object.
               newChat.messages.push(firstMessage)
               newChat.save((err) => {
                 // Send 500 status if there is an error.
-                if (err)
+                if (err) {
                   res.status(500).send({ error: err })
-
-                // Send 201 status to show Chat creation was successful.
-                else
+                } else {
+                  // Send 201 status to show Chat creation was successful.
                   res.status(201).send("New Chat created successfully with message")
+                }
               })            
             }
           })
@@ -98,9 +94,9 @@ exports.getChat = (req, res, next) => {
       .findOne({ chatID: chatID })
       .populate('messages')
       .exec((err, chat) => {
-        if (err)
+        if (err) {
           res.status(500).send({ error: err })
-        if (chat) {
+        } else if (chat) {
           res.status(200).json(chat.messages)
         } else {
           res.status(422).send({ error: 'Could not find chat' })
@@ -128,12 +124,11 @@ exports.putChat = (req, res, next) => {
     // based on the chadID.
     Chat.findOne({ chatID: chatID }, (err, chat) => {
       // Send 500 status if there is an error.
-      if (err)
+      if (err) {
         res.status(500).send({ error: err })
-
-      // If there exists a chat, insert the new message into
-      // that Chat object.
-      else if (chat) {
+      } else if (chat) {
+        // If there exists a chat, insert the new message into
+        // that Chat object.
         // Create a new Message object.
         const newMessage = new Message({
           _create: chat._id,
@@ -148,10 +143,9 @@ exports.putChat = (req, res, next) => {
         // invoke the callback function.
         newMessage.save((err) => {
           // Send 500 status if there is an error.
-          if (err)
+          if (err) {
             res.status(500).send({ error: err })
-
-          else {
+          } else {
             // Call a static function in the Chat model to find the
             // Chat object and pushes the new message into the Chat's
             // object messages array. Then, invoke the callback
@@ -162,17 +156,16 @@ exports.putChat = (req, res, next) => {
               { safe: true, upsert: true, new: true },
               function(err, chat) {
                 // Send 500 status if there is an error.
-                if (err)
+                if (err) {
                   res.status(500).send({ error: err })
-
-                else
+                } else
                   // Send 201 status to show message insertion was successful.
                   res.status(201).send("New message successfully saved to chat")
-              })
+              }
+            )
           }
         })
-      }
-      else
+      } else
         // Send 422 status to indicate that Chat object was not found.
         res.status(422).send({ error: 'Could not find chat' })
     })
@@ -195,22 +188,20 @@ exports.postChat = (req, res, next) => {
     const messageObj = req.body
 
     // Make sure that a message object exists.
-    if (!messageObj)
-      res.status(422).send({ error: 'Message must be provided' })
-
-    // Make sure the receiver's ID exists.
-    else if (!messageObj.otherUserID)
+    if (!messageObj) {
+      res.status(422).send({ error: 'Message object must be provided' })
+    } else if (!messageObj.otherUserID) {
+      // Make sure the receiver's ID exists.
       res.status(422).send({ error: 'Message must be sent to another user' })
-
-    // Since we're comparing an object with a string, the '==' would have
-    // to be used instead of the '==='.
-    else if (messageObj.otherUserID == thisUserID)
+    } else if (messageObj.otherUserID == thisUserID) {
+      // Since we're comparing an object with a string, the '==' would have
+      // to be used instead of the '==='.
       res.status(422).send({ error: 'Chat must be with two people' })
-
-    // Make sure an actual message exists.
-    else if (!messageObj.message)
+    } else if (!messageObj.message) {
+      // Make sure an actual message exists.
       res.status(422).send({ error: 'Message must be provided' })
-
-    else createNewChat(res, messageObj, thisUserID)
+    } else {
+      createNewChat(res, messageObj, thisUserID)
+    }
   }
 }

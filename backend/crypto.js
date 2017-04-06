@@ -32,8 +32,7 @@ exports.encryptor = (message, publicKeyPath) => {
 
   // Loads the RSA key.
   const RSAKeyText = fs.readFileSync(publicKeyPath, 'utf8', (err, data) => {
-    if (err)
-      return console.log(err)
+    if (err) return console.log(err)
   })
 
   // Converts concatenated string into a Buffer object to pass in as a 
@@ -74,8 +73,7 @@ exports.decryptor = (encryptJSONObj, privateKeyPath) => {
 
   // Load RSA key.
   const RSAKeyText = fs.readFileSync(privateKeyPath, 'utf8', (err, datta) => {
-    if (err)
-      return console.log(err)
+    if (err) return console.log(err)
   })
  
   // Converts RSACipherText (String) into a Buffer Object.

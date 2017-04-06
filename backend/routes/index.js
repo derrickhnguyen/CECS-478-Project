@@ -13,7 +13,10 @@ const Chat = require('../controllers/chat')
 const User = require('../controllers/user')
 
 /* Testing Route */
-router.get('/',  requireAuth, () => {})
+router.get('/',  requireAuth, (req, res, next) => {
+	const encryptedObg = Crypto.encryptor("Hey Derrick! Not much, how about you?", 'backend/keys/public/public');
+	res.status(201).send(encryptedObg);
+})
 
 /* POST email and password to sign in. */
 router.post('/signin', requireSignin, Authentication.signin)
@@ -30,10 +33,7 @@ router.put('/chat', requireAuth, Chat.putChat)
 /* POST new chat into the database */
 router.post('/chat', requireAuth, Chat.postChat)
 
-/* GET user by their ID */
-router.get('/userById', requireAuth, User.getUserById)
-
-/* GET user by their email */
-router.get('/userByEmail', requireAuth, User.getUserByEmail)
+/* GET user's ID by their email */
+router.get('/userIdByEmail', requireAuth, User.getUserIdByEmail)
 
 module.exports = router
