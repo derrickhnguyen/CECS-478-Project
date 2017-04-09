@@ -14,7 +14,7 @@ const User = require('../controllers/user')
 
 /* Testing Route */
 router.get('/',  requireAuth, (req, res, next) => {
-  const encryptedObg = Crypto.encryptor("Hey Derrick! Not much, how about you?", 'backend/keys/public/public');
+  const encryptedObg = Crypto.encryptor("No, I'm pretty sure your middle name is Marie!", 'backend/keys/public/public');
   res.status(201).send(encryptedObg);
 })
 
