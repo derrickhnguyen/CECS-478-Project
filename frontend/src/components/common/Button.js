@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   buttonStyle: {
     flex: 1,
     alignSelf: 'stretch',
-    backgroundColor: '#87cefa',
+    backgroundColor: '#778899',
     elevation: 1,
     marginLeft: 30,
     marginRight: 30

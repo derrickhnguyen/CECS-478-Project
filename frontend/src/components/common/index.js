@@ -1,6 +1,4 @@
 export * from './Button'
-export * from './BorderCard'
-export * from './BorderCardSection'
 export * from './Card'
 export * from './CardSection'
 export * from './Header'

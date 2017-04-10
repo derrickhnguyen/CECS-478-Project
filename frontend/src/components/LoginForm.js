@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import { Text, StyleSheet } from 'react-native'
+import { connect } from 'react-redux'
+import * as actions from '../actions'
 import { Button, Card, CardSection, Input, Spinner } from './common'
 import axios from 'axios'
 
@@ -7,18 +9,17 @@ class LoginForm extends Component {
   state = { 
     email: '',
     password: '',
-    token: '',
     error: '',
     loading: false
   }
 
   onButtonPress() {
+    const { email, password } = this.state
+
     this.setState({ 
       error: '',
       loading: true
     })
-
-    const { email, password } = this.state
 
     if (email == '' || password == '') {
       this.setState({
@@ -34,12 +35,14 @@ class LoginForm extends Component {
 
   onLoginSuccess(token) {
     this.setState({
-      token: token,
       email: '',
       password: '',
       loading: false,
       error:''
     })
+
+    this.props.getToken(token)
+    console.log(this.props.token)
   }
 
   onLoginFailure() {
@@ -47,7 +50,7 @@ class LoginForm extends Component {
       email: '',
       password: '',
       loading: false,
-      error: 'Error, please try again'
+      error: 'Email/Password combination is incorrect'
     })
   }
 
@@ -79,9 +82,7 @@ class LoginForm extends Component {
             placeholder='Password'
           />
         </CardSection>
-
         <Text style={styles.errorTextStyle}>{this.state.error}</Text>
-
         <CardSection>
           {this.renderButton()}
         </CardSection>
@@ -100,4 +101,8 @@ const styles = StyleSheet.create({
   }
 })
 
-export default LoginForm
+const mapStateToProps = state => {
+  return { token: state.token }
+}
+
+export default connect(mapStateToProps, actions)(LoginForm)
