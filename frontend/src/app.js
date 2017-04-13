@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { View } from 'react-native'
 import { Provider } from 'react-redux'
 import { createStore, applyMiddleware } from 'redux'
 import ReduxThunk from 'redux-thunk'
@@ -13,10 +12,8 @@ class App extends Component {
     const store = createStore(reducers, {}, applyMiddleware(ReduxThunk))
     return (
       <Provider store={store}>
-        <View>
-          <Header headerText='M4G' />
-          <LoginForm />
-        </View>
+        <Header headerText='M4G' />
+        <LoginForm />
       </Provider>
     )
   }

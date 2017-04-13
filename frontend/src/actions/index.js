@@ -2,15 +2,8 @@ import axios from 'axios'
 import { 
   EMAIL_CHANGED,
   PASSWORD_CHANGED,
-  GET_TOKEN
+  LOGIN_USER_SUCCESS
 } from './types'
-
-export const getToken = (token) => {
-  return {
-    type: GET_TOKEN,
-    payload: token
-  }
-}
 
 export const emailChanged = (text) => {
   return {
@@ -30,7 +23,10 @@ export const loginUser = ({ email, password }) => {
   return (dispatch) => {
     axios.post('http://10.0.2.2:5000/signin', { email, password })
       .then(res => {
-        dispatch({ type: 'LOGIN_USER_SUCCESS', payload: res.data.token })
+        dispatch({ 
+          type: LOGIN_USER_SUCCESS,
+          payload: res.data.token 
+        })
       })
   }
 }
