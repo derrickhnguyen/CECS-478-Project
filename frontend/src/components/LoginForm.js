@@ -1,67 +1,20 @@
 import React, { Component } from 'react'
-import { Text, StyleSheet } from 'react-native'
+import { Button, Card, CardSection, Input } from './common'
 import { connect } from 'react-redux'
-import * as actions from '../actions'
-import { Button, Card, CardSection, Input, Spinner } from './common'
-import axios from 'axios'
+import { emailChanged, passwordChanged, loginUser } from '../actions'
 
 class LoginForm extends Component {
-  state = { 
-    email: '',
-    password: '',
-    error: '',
-    loading: false
+  onEmailChange(text) {
+    this.props.emailChanged(text)
+  }
+
+  onPasswordChange(text) {
+    this.props.passwordChanged(text)
   }
 
   onButtonPress() {
-    const { email, password } = this.state
-
-    this.setState({ 
-      error: '',
-      loading: true
-    })
-
-    if (email == '' || password == '') {
-      this.setState({
-        error: 'Please provide both your email and password',
-        loading: false
-      })
-    } else {
-      axios.post('http://10.0.2.2:5000/signin', { email, password })
-        .then(res => this.onLoginSuccess(res.data.token))
-        .catch(error => this.onLoginFailure())
-    }
-  }
-
-  onLoginSuccess(token) {
-    this.setState({
-      email: '',
-      password: '',
-      loading: false,
-      error:''
-    })
-
-    this.props.getToken(token)
-    console.log(this.props.token)
-  }
-
-  onLoginFailure() {
-    this.setState({
-      email: '',
-      password: '',
-      loading: false,
-      error: 'Email/Password combination is incorrect'
-    })
-  }
-
-  renderButton() {
-    if (this.state.loading === true) {
-      return <Spinner size="small" />
-    } else {
-      return (
-        <Button onPress={this.onButtonPress.bind(this)}>Log in</Button>
-      )
-    }
+    const { email, password } = this.props
+    this.props.loginUser({ email, password })
   }
 
   render() {
@@ -69,40 +22,39 @@ class LoginForm extends Component {
       <Card>
         <CardSection>
           <Input
-            value={this.state.email}
-            onChangeText={email => this.setState({ email })}
             placeholder='Email'
+            onChangeText={this.onEmailChange.bind(this)}
+            value={this.props.email}
           />
         </CardSection>
         <CardSection>
           <Input
             secureTextEntry
-            value={this.state.password}
-            onChangeText={password => this.setState({ password })}
             placeholder='Password'
+            onChangeText={this.onPasswordChange.bind(this)}
+            value={this.props.password}
           />
         </CardSection>
-        <Text style={styles.errorTextStyle}>{this.state.error}</Text>
         <CardSection>
-          {this.renderButton()}
+          <Button onPress={this.onButtonPress.bind(this)}>
+            Login
+          </Button>
         </CardSection>
       </Card>
     )
   }
 }
 
-const styles = StyleSheet.create({
-  errorTextStyle: {
-    marginLeft: 20,
-    marginRight: 20,
-    fontSize: 13,
-    alignSelf: 'center',
-    color: 'red'
-  }
-})
-
 const mapStateToProps = state => {
-  return { token: state.token }
+  return {
+    email: state.auth.email,
+    password: state.auth.password,
+    token: state.token
+  }
 }
 
-export default connect(mapStateToProps, actions)(LoginForm)
+export default connect(mapStateToProps, {
+  emailChanged,
+  passwordChanged,
+  loginUser
+})(LoginForm)
