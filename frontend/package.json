@@ -9,6 +9,7 @@
   "dependencies": {
     "axios": "^0.16.1",
     "crypto-js": "^3.1.9-1",
+    "kbpgp": "^2.0.69",
     "react": "16.0.0-alpha.6",
     "react-native": "0.43.1",
     "react-native-router-flux": "^3.35.0",

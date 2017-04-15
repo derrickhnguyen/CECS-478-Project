@@ -35,13 +35,13 @@ export default (state = INITIAL_STATE, action) => {
     case LOGIN_USER_SUCCESS:
       return {
         ...state,
-        INITIAL_STATE,
+        ...INITIAL_STATE,
         token: action.payload
       }
     case LOGIN_USER_FAIL:
       return {
         ...state,
-        error: 'Authentication Failed',
+        error:  action.payload,
         password: '',
         loading: false
       }

@@ -8,8 +8,8 @@ const Message = require('../models/message')
 * @param   {Object}   messageObj
 * @return  {ObjectID} thisUserID
 */
-const createNewChat = (res, messageObj, thisUserID) => {
-  const chatID = [thisUserID, messageObj.otherUserID].sort().join(":")
+const createNewChat = (res, otherUserId, thisUserId) => {
+  const chatID = [thisUserId, otherUserId].sort().join(":")
 
   // Check database to see if the Chat Object already exists
   // based on the chadID.
@@ -19,13 +19,13 @@ const createNewChat = (res, messageObj, thisUserID) => {
       res.status(500).send({ error: err })
     } else if (chat) {
       // Do not create a new chat if chat already exists.
-      res.status(422).send({error: "This Chat already exists."})
+      res.status(422).send({error: "This chat already exists."})
     } else {
       // If chat does not exist, create a new chat with a message.
       // Create a new Chat object.
       const newChat = new Chat({
         chatID: chatID,
-        users: [thisUserID, messageObj.otherUserID]
+        users: [thisUserId, otherUserId]
       })
 
       // Save the new Chat object into the database, and then
@@ -35,38 +35,7 @@ const createNewChat = (res, messageObj, thisUserID) => {
         if (err) {
           res.status(500).send({ error: err })
         } else {
-          // Create a new Message object.
-          const firstMessage = new Message({
-            _creator: newChat._id,
-            senderID: thisUserID,
-            receiverID: messageObj.otherUserID,
-            timeStamp: Date.now(),
-            isRead: false,
-            message: JSON.stringify(messageObj.message)
-          })
-
-          // Save the new Message object into the database, and then
-          // invoke the callback function.
-          firstMessage.save((err) => {
-            // Send 500 status if there is an error.
-            if (err) {
-              res.status(500).json({ error: err })
-            } else {
-              // Push the new Message object into the newly created
-              // Chat object's message array, and then save the Chat
-              // Object.
-              newChat.messages.push(firstMessage)
-              newChat.save((err) => {
-                // Send 500 status if there is an error.
-                if (err) {
-                  res.status(500).send({ error: err })
-                } else {
-                  // Send 201 status to show Chat creation was successful.
-                  res.status(201).send("New Chat created successfully with message")
-                }
-              })            
-            }
-          })
+          res.status(201).send('New chat created succesfully ')
         }
       })
     }
@@ -182,26 +151,11 @@ exports.putChat = (req, res, next) => {
 exports.postChat = (req, res, next) => {
   // Check if user is verified.
   if (req.user) {
-    const thisUserID = req.user._id
-    
-    // Extract message object from request.
-    const messageObj = req.body
+    const thisUserId = req.user._id
+    const otherUserId = req.body.otherUserID
 
-    // Make sure that a message object exists.
-    if (!messageObj) {
-      res.status(422).send({ error: 'Message object must be provided' })
-    } else if (!messageObj.otherUserID) {
-      // Make sure the receiver's ID exists.
-      res.status(422).send({ error: 'Message must be sent to another user' })
-    } else if (messageObj.otherUserID == thisUserID) {
-      // Since we're comparing an object with a string, the '==' would have
-      // to be used instead of the '==='.
-      res.status(422).send({ error: 'Chat must be with two people' })
-    } else if (!messageObj.message) {
-      // Make sure an actual message exists.
-      res.status(422).send({ error: 'Message must be provided' })
-    } else {
-      createNewChat(res, messageObj, thisUserID)
+    if (otherUserId) {
+      createNewChat(res, otherUserId, thisUserId)
     }
   }
 }
