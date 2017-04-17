@@ -19,7 +19,7 @@ const createNewChat = (res, otherUserId, thisUserId) => {
       res.status(500).send({ error: err })
     } else if (chat) {
       // Do not create a new chat if chat already exists.
-      res.status(422).send({error: "This chat already exists."})
+      res.status(422).send({ error: 'This chat already exists' })
     } else {
       // If chat does not exist, create a new chat with a message.
       // Create a new Chat object.
@@ -154,8 +154,10 @@ exports.postChat = (req, res, next) => {
     const thisUserId = req.user._id
     const otherUserId = req.body.otherUserID
 
-    if (otherUserId) {
+    if (otherUserId && thisUserId != otherUserId) {
       createNewChat(res, otherUserId, thisUserId)
+    } else {
+      res.status(422).send({ error: 'You cannot have a message with yourself' })
     }
   }
 }

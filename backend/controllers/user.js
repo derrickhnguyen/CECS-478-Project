@@ -22,7 +22,30 @@ exports.getUserIdByEmail = (req, res, next) => {
           // Send 500 status if there is an error.
           res.status(500).send({ error: err })
         } else if (user) {
-          res.status(201).json(user._id)
+          res.status(201).send(user._id)
+        } else {
+          res.status(422).send({ error: 'Unsuccessfully retrieved user' })
+        }
+      })
+    }
+  }
+}
+
+exports.getUserByEmail = (req, res, next) => {
+  if (req.user) {
+    const userEmail = req.query.email
+    if (!userEmail) {
+      res.status(422).send({ error: 'userEmail must be provided' })
+    } else {
+      User.findOne({ email: userEmail }, (err, user) => {
+        if (err) {
+          res.status(500).send({ error: err })
+        } else if (user) {
+          res.status(201).send({
+            firstname: user.firstname,
+            lastname: user.lastname,
+            id: user._id
+          })
         } else {
           res.status(422).send({ error: 'Unsuccessfully retrieved user' })
         }

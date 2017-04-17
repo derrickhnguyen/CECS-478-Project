@@ -1,11 +1,24 @@
 import React, { Component } from 'react'
-import { View, Text, StyleSheet, TouchableNativeFeedback, TouchableOpacity } from 'react-native'
+import { Text, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
-import { Actions } from 'react-native-router-flux'
-import { Button, Card, CardSection, Input, Spinner, ErrorMessage } from './common'
-import { authEmailChanged, authPasswordChanged, loginUser, signupClicked } from '../actions'
+import { Card, CardSection, Input, Button, Spinner, ErrorMessage } from './common'
+import {
+  authFirstNameChanged,
+  authLastNameChanged,
+  authEmailChanged,
+  authPasswordChanged,
+  signupUser
+} from '../actions'
 
-class LoginForm extends Component {
+class SignupForm extends Component {
+  onFirstNameChange(text) {
+    this.props.authFirstNameChanged(text)
+  }
+
+  onLastNameChange(text) {
+    this.props.authLastNameChanged(text)
+  }
+
   onEmailChange(text) {
     this.props.authEmailChanged(text)
   }
@@ -15,12 +28,8 @@ class LoginForm extends Component {
   }
 
   onButtonPress() {
-    const { email, password } = this.props
-    this.props.loginUser({ email, password })
-  }
-
-  onSignupClick() {
-    this.props.signupClicked()
+    const { firstname, lastname, email, password } = this.props
+    this.props.signupUser({ firstname, lastname, email, password })
   }
 
   renderButton() {
@@ -29,17 +38,30 @@ class LoginForm extends Component {
     } else {
       return (
         <Button onPress={this.onButtonPress.bind(this)}>
-          Login
+          Sign Up
         </Button>
       )
     }
   }
 
   render() {
-    const { signUpContainer, signUpStyle } = styles
 
     return (
       <Card>
+        <CardSection>
+          <Input
+            placeholder='First Name'
+            onChangeText={this.onFirstNameChange.bind(this)}
+            value={this.props.firstname}
+          />
+        </CardSection>
+        <CardSection>
+          <Input
+            placeholder='Last Name'
+            onChangeText={this.onLastNameChange.bind(this)}
+            value={this.props.lastname}
+          />
+        </CardSection>
         <CardSection>
           <Input
             placeholder='Email'
@@ -59,32 +81,24 @@ class LoginForm extends Component {
         <CardSection>
           {this.renderButton()}
         </CardSection>
-        <CardSection>
-          <View style={signUpContainer}>
-            <Text style={signUpStyle}>
-              Don't have an account? Sign up <Text style={{color: 'blue'}} onPress={this.onSignupClick.bind(this)}>here</Text>
-            </Text>
-          </View>
-        </CardSection>
       </Card>
     )
   }
 }
 
-const styles = StyleSheet.create({
-  signUpContainer: {
-    flex: 1,
-    justifyContent: 'center'
-  },
-  signUpStyle: {
-    fontSize: 15,
-    textAlign: 'center'
-  }
-})
-
 const mapStateToProps = ({ auth }) => {
-  const { email, password, error, loading } = auth
+  const {
+    firstname,
+    lastname,
+    email,
+    password,
+    error,
+    loading
+  } = auth
+
   return {
+    firstname,
+    lastname,
     email,
     password,
     error,
@@ -93,8 +107,9 @@ const mapStateToProps = ({ auth }) => {
 }
 
 export default connect(mapStateToProps, {
+  authFirstNameChanged,
+  authLastNameChanged,
   authEmailChanged,
   authPasswordChanged,
-  loginUser,
-  signupClicked
-})(LoginForm)
+  signupUser
+})(SignupForm)

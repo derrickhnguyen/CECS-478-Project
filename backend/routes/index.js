@@ -36,4 +36,7 @@ router.post('/chat', requireAuth, Chat.postChat)
 /* GET user's ID by their email */
 router.get('/userIdByEmail', requireAuth, User.getUserIdByEmail)
 
+/* GET user by their email */
+router.get('/userByEmail', requireAuth, User.getUserByEmail)
+
 module.exports = router
