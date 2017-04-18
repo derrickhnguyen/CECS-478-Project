@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
+import { Text } from 'react-native'
 import { connect } from 'react-redux'
-import { Card, CardSection } from './common'
+import { Card, CardSection, ErrorMessage } from './common'
 import { renderList } from '../actions'
 import ChatItem from './ChatItem'
 
@@ -11,12 +12,18 @@ class ChatList extends Component {
   }
 
   render() {
-    if (this.props.loading) {
+    const { loading, listOfChats, error } = this.props
+
+    if (error !== '') {
+      return <ErrorMessage error={error} />
+    } else if (loading) {
       return <Spinner size='large' />
+    } else if (listOfchats.length === 0) {
+      return <Text style={{fontSize: 20}}>Start a new chat by clicking 'Add'!</Text>
     } else {
-      const list = this.props.listOfChats.map(({ firstname, lastname }) => {
+      const list = listOfChats.map(chat => {
         return (
-          <ChatItem firstname={firstname} lastname={lastname} />
+          <ChatItem firstname={chat.firstname} lastname={chat.lastname} />
         )
       })
 
@@ -31,7 +38,7 @@ class ChatList extends Component {
 
 const mapStateToProps = ({ auth, chatList }) => {
   const { token, userId } = auth
-  const { listOfChats, loading } = chatList
+  const { listOfChats, loading, error } = chatList
   return { token, listOfChats, userId, loading }
 }
 

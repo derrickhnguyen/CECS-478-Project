@@ -79,14 +79,14 @@ export const renderList = ({ token, userId }) => {
               itemsProcessed++
               data[index]['firstname'] = result.data.firstname
               data[index]['lastname'] = result.data.lastname
-              if(itemsProcessed === otherUserIds.length) {
+              if (itemsProcessed === otherUserIds.length) {
                 renderListSuccess(dispatch, data)
               } else if (index === otherUserIds.length - 1) {
-                renderListFail(dispatch, listeRenderFail)
+                renderListFail(dispatch, listRenderFail)
               }
             })
             .catch(() => {
-              renderListFail(dispatch, listeRenderFail)
+              renderListFail(dispatch, listRenderFail)
             })
         })
       })

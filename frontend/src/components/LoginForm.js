@@ -37,6 +37,7 @@ class LoginForm extends Component {
 
   render() {
     const { signUpContainer, signUpStyle } = styles
+    const { email, password, error } = this.props
 
     return (
       <Card>
@@ -44,7 +45,7 @@ class LoginForm extends Component {
           <Input
             placeholder='Email'
             onChangeText={this.onEmailChange.bind(this)}
-            value={this.props.email}
+            value={email}
           />
         </CardSection>
         <CardSection>
@@ -52,10 +53,10 @@ class LoginForm extends Component {
             secureTextEntry
             placeholder='Password'
             onChangeText={this.onPasswordChange.bind(this)}
-            value={this.props.password}
+            value={password}
           />
         </CardSection>
-        <ErrorMessage error={this.props.error} />
+        <ErrorMessage error={error} />
         <CardSection>
           {this.renderButton()}
         </CardSection>
