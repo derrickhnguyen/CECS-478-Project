@@ -5,7 +5,6 @@ import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 import ChatList from './components/ChatList'
 import ChatCreate from './components/ChatCreate'
-import ChatItem from './components/ChatItem'
 import { signupLeftClicked } from './actions'
 
 class RouterComponent extends Component {
@@ -25,7 +24,6 @@ class RouterComponent extends Component {
             component={SignupForm}
             title='Sign Up' />
         </Scene>
-
         <Scene key='main'>
           <Scene
             onRight={() => Actions.chatCreate()}
@@ -39,19 +37,10 @@ class RouterComponent extends Component {
             component={ChatCreate}
             title='Create chat'
           />
-          <Scene
-            key='chatItem'
-            component={ChatItem}
-            title='Chat Item'
-          />
         </Scene>
       </Router>
     )
   }
 }
 
-const mapStateToProps = ({ auth }) => {
-  return { firstname: auth.firstname }
-}
-
-export default connect(mapStateToProps, { signupLeftClicked })(RouterComponent)
+export default connect(null, { signupLeftClicked })(RouterComponent)

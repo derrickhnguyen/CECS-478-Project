@@ -59,7 +59,7 @@ exports.signup = (req, res, next) => {
         token: tokenForUser(user),
         firstname: user.firstname,
         lastname: user.lastname,
-        id: req.user._id
+        id: user._id
       })
     })
   })

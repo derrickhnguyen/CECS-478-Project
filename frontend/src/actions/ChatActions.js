@@ -72,17 +72,23 @@ export const renderList = ({ token, userId }) => {
           })
         })
 
+        const itemsProcessed = 0
         otherUserIds.forEach((id, index) => {
           axiosInstance.get(`http:10.0.2.2:5000/userNameById?id=${id}`)
             .then(result => {
+              itemsProcessed++
               data[index]['firstname'] = result.data.firstname
               data[index]['lastname'] = result.data.lastname
+              if(itemsProcessed === otherUserIds.length) {
+                renderListSuccess(dispatch, data)
+              } else if (index === otherUserIds.length - 1) {
+                renderListFail(dispatch, listeRenderFail)
+              }
             })
             .catch(() => {
               renderListFail(dispatch, listeRenderFail)
             })
         })
-        renderListSuccess(dispatch, data)
       })
       .catch(() => {
         renderListFail(dispatch, listRenderFail)

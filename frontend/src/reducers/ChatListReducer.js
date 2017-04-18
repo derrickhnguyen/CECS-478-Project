@@ -11,7 +11,6 @@ const INITIAL_STATE = {
 }
 
 export default (state = INITIAL_STATE, action) => {
-  console.log(action)
   switch(action.type) {
     case RENDER_LIST:
       return {
@@ -23,14 +22,12 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         ...INITIAL_STATE,
-        listOfChats: action.payload,
-        loading: false
+        listOfChats: action.payload
       }
     case RENDER_LIST_FAIL:
       return {
         ...state,
         ...INITIAL_STATE,
-        loading: false,
         error: action.payload
       }
     default:

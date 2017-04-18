@@ -11,18 +11,21 @@ class ChatList extends Component {
   }
 
   render() {
-    const list = this.props.listOfChats.map(chat => {
-      console.log(chat)
-      return (
-        <ChatItem firstname={this.props.chat.firstname} lastname={this.props.chat.lastname} />
-      )
-    })
+    if (this.props.loading) {
+      return <Spinner size='large' />
+    } else {
+      const list = this.props.listOfChats.map(({ firstname, lastname }) => {
+        return (
+          <ChatItem firstname={firstname} lastname={lastname} />
+        )
+      })
 
-    return (
-      <Card>
-        {list}
-      </Card>
-    )
+      return (
+        <Card>
+          {list}
+        </Card>
+      )
+    }
   }
 }
 
@@ -32,4 +35,4 @@ const mapStateToProps = ({ auth, chatList }) => {
   return { token, listOfChats, userId, loading }
 }
 
-export default connect(mapStateToProps, {renderList})(ChatList)
+export default connect(mapStateToProps, { renderList })(ChatList)
