@@ -33,7 +33,6 @@ class RouterComponent extends Component {
             key='chatList'
             component={ChatList}
             title='Welcome'
-            initial
           />
           <Scene
             key='chatCreate'

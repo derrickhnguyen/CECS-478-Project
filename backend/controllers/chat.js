@@ -66,11 +66,26 @@ exports.getChat = (req, res, next) => {
         if (err) {
           res.status(500).send({ error: err })
         } else if (chat) {
-          res.status(200).json(chat.messages)
+          res.status(200).send(chat.messages)
         } else {
           res.status(422).send({ error: 'Could not find chat' })
         }
       })
+  }
+}
+
+exports.getAllChat = (req, res, next) => {
+  if(req.user) {
+    const thisUserID = req.user._id
+    Chat.find({ chatID: {'$regex': thisUserID, '$options': 'i'} }, (err, chats) => {
+      if (err) {
+        res.status(500).send({ error: err })
+      } else if (chats) {
+        res.status(200).send(chats)
+      } else {
+        res.status(422).send({ error: 'Could not get chats' })
+      }
+    })
   }
 }
 

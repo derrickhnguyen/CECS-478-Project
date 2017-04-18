@@ -53,3 +53,25 @@ exports.getUserByEmail = (req, res, next) => {
     }
   }
 }
+
+exports.getNameById = (req, res, next) => {
+  if(req.user) {
+    const userId = req.query.id
+    if(!userId) {
+      res.status(422).send({ error: 'ID must be provided' })
+    } else {
+      User.findById(userId, (err, user) => {
+        if (err) {
+          res.status(500).send({ error: err })
+        } else if (user) {
+          res.status(201).send({
+            firstname: user.firstname,
+            lastname: user.lastname
+          })
+        } else {
+          res.status(422).send({ error: 'Unable to retrieve name' })
+        }
+      })
+    }
+  }
+}

@@ -20,7 +20,7 @@ class ChatCreate extends Component {
     } else {
       return (
         <Button onPress={this.onButtonPress.bind(this)}>
-          Login
+          Create Chat
         </Button>
       )
     }

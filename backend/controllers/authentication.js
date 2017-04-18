@@ -13,7 +13,8 @@ exports.signin = (req, res, next) => {
   res.send({
     token: tokenForUser(req.user),
     firstname: req.user.firstname,
-    lastname: req.user.lastname
+    lastname: req.user.lastname,
+    id: req.user._id
   })
 }
 
@@ -57,7 +58,8 @@ exports.signup = (req, res, next) => {
       res.send({
         token: tokenForUser(user),
         firstname: user.firstname,
-        lastname: user.lastname
+        lastname: user.lastname,
+        id: req.user._id
       })
     })
   })

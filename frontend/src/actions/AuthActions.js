@@ -104,13 +104,14 @@ export const signupLeftClicked = () => {
 }
 
 const loginUserSuccess = (dispatch, data) => {
-  const { firstname, lastname, token } = data
+  const { firstname, lastname, token, id } = data
   dispatch({
     type: LOGIN_USER_SUCCESS,
     payload: {
       firstname: firstname,
       lastname: lastname,
-      token: token
+      token: token,
+      userId: id
     }
   })
 
@@ -125,13 +126,14 @@ const loginUserFail = (dispatch, errorMsg) => {
 }
 
 const signupUserSuccess = (dispatch, data) => {
-  const { firstname, lastname, token } = data
+  const { firstname, lastname, token, id } = data
   dispatch({
     type: SIGNUP_USER_SUCCESS,
     payload: {
       firstname: firstname,
       lastname: lastname,
-      token: token
+      token: token,
+      userId: id
     }
   })
 

@@ -27,6 +27,9 @@ router.post('/signup', Authentication.signup)
 /* GET chat between two users */
 router.get('/chat/:otherUserID', requireAuth, Chat.getChat)
 
+/* GET all chat by one user */
+router.get('/allChat', requireAuth, Chat.getAllChat)
+
 /* PUT new message into an existing chat */
 router.put('/chat', requireAuth, Chat.putChat)
 
@@ -38,5 +41,8 @@ router.get('/userIdByEmail', requireAuth, User.getUserIdByEmail)
 
 /* GET user by their email */
 router.get('/userByEmail', requireAuth, User.getUserByEmail)
+
+/* Get user's name by their ID */
+router.get('/userNameById', requireAuth, User.getNameById)
 
 module.exports = router

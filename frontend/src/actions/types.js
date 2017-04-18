@@ -17,3 +17,8 @@ export const CHAT_EMAIL_CHANGED = 'chat_email_changed'
 export const CREATE_CHAT = 'create_chat'
 export const CREATE_CHAT_FAIL = 'create_chat_fail'
 export const CREATE_CHAT_SUCCESS = 'create_chat_success'
+
+/* Chat List */
+export const RENDER_LIST = 'render_list'
+export const RENDER_LIST_SUCCESS = 'render_list_success'
+export const RENDER_LIST_FAIL = 'render_list_fail'
