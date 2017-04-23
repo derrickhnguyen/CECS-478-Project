@@ -3,8 +3,6 @@ const router = express.Router()
 const passportService = require('../services/passport')
 const passport = require('passport')
 
-const crypto = require('../crypto')
-
 const requireSignin = passport.authenticate('local', { session: false })
 const requireAuth = passport.authenticate('jwt', { session: false })
 
@@ -14,7 +12,6 @@ const User = require('../controllers/user')
 
 /* Testing Route */
 router.get('/',  requireAuth, (req, res, next) => {
-  crypto.encryptor("Hey I'm derrick", "backend/keys/private/private")
   res.status(201).send({ success: 'success' })
 })
 

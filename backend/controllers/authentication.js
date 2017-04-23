@@ -19,7 +19,6 @@ exports.signin = (req, res, next) => {
 }
 
 exports.signup = (req, res, next) => {
-  console.log('In Signup!!!')
   // Get values from the request body.
   const firstname = req.body.firstname
   const lastname = req.body.lastname
