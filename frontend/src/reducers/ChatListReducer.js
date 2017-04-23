@@ -7,7 +7,7 @@ import {
 const INITIAL_STATE = {
   listOfChats: [],
   loading: false,
-  error: ''
+  chatListError: ''
 }
 
 export default (state = INITIAL_STATE, action) => {
@@ -28,7 +28,7 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         ...INITIAL_STATE,
-        error: action.payload
+        chatListError: action.payload
       }
     default:
       return state

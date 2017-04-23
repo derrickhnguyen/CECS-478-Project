@@ -8,7 +8,7 @@ import {
 const INITIAL_STATE = {
   email: '',
   loading: false,
-  error: ''
+  chatFormError: ''
 }
 
 export default (state = INITIAL_STATE, action) => {
@@ -29,7 +29,7 @@ export default (state = INITIAL_STATE, action) => {
         ...state,
         ...INITIAL_STATE,
         loading: false,
-        error: action.payload
+        chatFormError: action.payload
       }
     case CREATE_CHAT_SUCCESS:
       return {

@@ -77,7 +77,7 @@ class SignupForm extends Component {
             value={this.props.password}
           />
         </CardSection>
-        <ErrorMessage error={this.props.error} />
+        <ErrorMessage error={this.props.authError} />
         <CardSection>
           {this.renderButton()}
         </CardSection>
@@ -92,7 +92,7 @@ const mapStateToProps = ({ auth }) => {
     lastname,
     email,
     password,
-    error,
+    authError,
     loading
   } = auth
 
@@ -101,7 +101,7 @@ const mapStateToProps = ({ auth }) => {
     lastname,
     email,
     password,
-    error,
+    authError,
     loading
   }
 }

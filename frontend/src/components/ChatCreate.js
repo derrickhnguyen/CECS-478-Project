@@ -41,7 +41,7 @@ class ChatCreate extends Component {
             onChangeText={this.onEmailChange.bind(this)}
           />
         </CardSection>
-        <ErrorMessage error={this.props.error} />
+        <ErrorMessage error={this.props.chatFormError} />
         <CardSection>
           {this.renderButton()}
         </CardSection>
@@ -59,11 +59,11 @@ const styles = {
 
 const mapStateToProps = ({ auth, chatForm }) => {
   const { token } = auth
-  const { email, error, loading } = chatForm
+  const { email, chatFormError, loading } = chatForm
   return {
     email,
     token,
-    error,
+    chatFormError,
     loading
   }
 }

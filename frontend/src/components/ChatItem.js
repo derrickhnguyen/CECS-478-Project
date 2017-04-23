@@ -8,8 +8,8 @@ class ChatItem extends Component {
     const { containerStyle, imageStyle, textStyle } = styles
 
     return(
-      <BorderCard>
-        <BorderCardSection>
+      <BorderCard style={{backgroundColor: '#778899'}}>
+        <BorderCardSection style={{backgroundColor: '#778899'}}>
           <View style={containerStyle}>
             <Image style={imageStyle} source={require('../../images/person-placeholder.jpg')} />
             <Text style={textStyle}>{`${this.props.firstname} ${this.props.lastname}`}</Text>
@@ -31,6 +31,7 @@ const styles = {
     height: 50
   },
   textStyle: {
+    color: 'white',
     fontSize: 20,
     justifyContent: 'center',
     alignSelf: 'center',

@@ -3,10 +3,10 @@ const router = express.Router()
 const passportService = require('../services/passport')
 const passport = require('passport')
 
+const crypto = require('../crypto')
+
 const requireSignin = passport.authenticate('local', { session: false })
 const requireAuth = passport.authenticate('jwt', { session: false })
-
-const Crypto = require('../crypto')
 
 const Authentication = require('../controllers/authentication')
 const Chat = require('../controllers/chat')
@@ -14,8 +14,8 @@ const User = require('../controllers/user')
 
 /* Testing Route */
 router.get('/',  requireAuth, (req, res, next) => {
-  const encryptedObg = Crypto.encryptor("Good, good! Thanks, man!", 'backend/keys/public/public');
-  res.status(201).send(encryptedObg);
+  crypto.encryptor("Hey I'm derrick", "backend/keys/private/private")
+  res.status(201).send({ success: 'success' })
 })
 
 /* POST email and password to sign in. */

@@ -56,7 +56,9 @@ export const loginUser = ({ email, password }) => {
     } else {
       axios.post('http:10.0.2.2:5000/signin', { email, password })
         .then(res => loginUserSuccess(dispatch, res.data))
-        .catch(() => loginUserFail(dispatch, loginFailed))
+        .catch(() => {
+          loginUserFail(dispatch, loginFailed)
+      })
     }
   }
 }

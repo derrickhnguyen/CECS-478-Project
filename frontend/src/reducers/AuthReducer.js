@@ -20,7 +20,7 @@ const INITIAL_STATE = {
   password: '',
   userId: '',
   token: '',
-  error: '',
+  authError: '',
   loading: false
 }
 
@@ -50,13 +50,13 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         loading: true,
-        error: ''
+        authError: ''
       }
     case SIGNUP_USER:
       return {
         ...state,
         loading: true,
-        error: ''
+        authError: ''
       }
     case LOGIN_USER_SUCCESS:
       return {
@@ -70,7 +70,7 @@ export default (state = INITIAL_STATE, action) => {
     case LOGIN_USER_FAIL:
       return {
         ...state,
-        error:  action.payload,
+        authError: action.payload,
         password: '',
         loading: false
       }
@@ -86,7 +86,7 @@ export default (state = INITIAL_STATE, action) => {
     case SIGNUP_USER_FAIL:
       return {
         ...state,
-        error: action.payload,
+        authError: action.payload,
         password: '',
         loading: false
       }

@@ -36,8 +36,8 @@ class LoginForm extends Component {
   }
 
   render() {
-    const { signUpContainer, signUpStyle } = styles
-    const { email, password, error } = this.props
+    const { signUpContainer, signUpStyle, innerSignUpStyle } = styles
+    const { email, password, authError } = this.props
 
     return (
       <Card>
@@ -56,14 +56,14 @@ class LoginForm extends Component {
             value={password}
           />
         </CardSection>
-        <ErrorMessage error={error} />
+        <ErrorMessage error={authError} />
         <CardSection>
           {this.renderButton()}
         </CardSection>
         <CardSection>
           <View style={signUpContainer}>
             <Text style={signUpStyle}>
-              Don't have an account? Sign up <Text style={{color: 'blue'}} onPress={this.onSignupClick.bind(this)}>here</Text>
+              Don't have an account? Sign up <Text style={innerSignUpStyle} onPress={this.onSignupClick.bind(this)}>here</Text>
             </Text>
           </View>
         </CardSection>
@@ -79,16 +79,21 @@ const styles = StyleSheet.create({
   },
   signUpStyle: {
     fontSize: 15,
-    textAlign: 'center'
+    textAlign: 'center',
+    marginTop: 20
+  },
+  innerSignUpStyle: {
+    color: '#778899',
+    fontWeight:'bold'
   }
 })
 
 const mapStateToProps = ({ auth }) => {
-  const { email, password, error, loading } = auth
+  const { email, password, authError, loading } = auth
   return {
     email,
     password,
-    error,
+    authError,
     loading
   }
 }

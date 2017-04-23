@@ -66,29 +66,31 @@ export const renderList = ({ token, userId }) => {
     })
     axiosInstance.get('http:10.0.2.2:5000/allChat')
       .then(({ data }) => {
-        const otherUserIds = data.map(chat => {
-          return chat.users.find(id => {
-            return id !== userId
+        if (data.length === 0) {
+          renderListSuccess(dispatch, data)
+        } else {
+          const otherUserIds = data.map(chat => {
+            return chat.users.find(id => {
+              return id !== userId
+            })
           })
-        })
 
-        const itemsProcessed = 0
-        otherUserIds.forEach((id, index) => {
-          axiosInstance.get(`http:10.0.2.2:5000/userNameById?id=${id}`)
-            .then(result => {
-              itemsProcessed++
-              data[index]['firstname'] = result.data.firstname
-              data[index]['lastname'] = result.data.lastname
-              if (itemsProcessed === otherUserIds.length) {
-                renderListSuccess(dispatch, data)
-              } else if (index === otherUserIds.length - 1) {
+          let itemsProcessed = 0
+          otherUserIds.forEach((id, index) => {
+            axiosInstance.get(`http:10.0.2.2:5000/userNameById?id=${id}`)
+              .then(result => {
+                itemsProcessed++
+                data[index]['firstname'] = result.data.firstname
+                data[index]['lastname'] = result.data.lastname
+                if (itemsProcessed === otherUserIds.length) {
+                  renderListSuccess(dispatch, data)
+                }
+              })
+              .catch(() => {
                 renderListFail(dispatch, listRenderFail)
-              }
-            })
-            .catch(() => {
-              renderListFail(dispatch, listRenderFail)
-            })
-        })
+              })
+          })
+        }
       })
       .catch(() => {
         renderListFail(dispatch, listRenderFail)
