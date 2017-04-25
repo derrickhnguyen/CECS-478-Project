@@ -31,10 +31,10 @@ export const createChat = ({ email, token }) => {
       const axiosInstance = axios.create({
         headers: {'authorization': token}
       })
-      axiosInstance.get(`http:10.0.2.2:5000/userIdByEmail?email=${email}`)
+      axiosInstance.get(`https://miningforgoldstein.me/userIdByEmail?email=${email}`)
         .then(({ data }) => {
           const otherUserID = data
-          axiosInstance.post('http:10.0.2.2:5000/chat', { otherUserID })
+          axiosInstance.post('https://miningforgoldstein.me/chat', { otherUserID })
             .then((res) => {
               dispatch({
                 type: CREATE_CHAT_SUCCESS
@@ -64,7 +64,7 @@ export const renderList = ({ token, userId }) => {
     const axiosInstance = axios.create({
       headers: {'authorization': token}
     })
-    axiosInstance.get('http:10.0.2.2:5000/allChat')
+    axiosInstance.get('https://miningforgoldstein.me/allChat')
       .then(({ data }) => {
         if (data.length === 0) {
           renderListSuccess(dispatch, data)
@@ -77,7 +77,7 @@ export const renderList = ({ token, userId }) => {
 
           let itemsProcessed = 0
           otherUserIds.forEach((id, index) => {
-            axiosInstance.get(`http:10.0.2.2:5000/userNameById?id=${id}`)
+            axiosInstance.get(`https://miningforgoldstein.me/userNameById?id=${id}`)
               .then(result => {
                 itemsProcessed++
                 data[index]['firstname'] = result.data.firstname

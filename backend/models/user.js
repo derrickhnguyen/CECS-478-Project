@@ -7,7 +7,8 @@ const userSchema = new Schema({
   firstname : { type: String },
   lastname  : { type: String },
   email     : { type: String, unique: true, lowercase: true },
-  password  : String
+  password  : String,
+  salt      : String
 })
 
 // On Save Hook, encrypt password
@@ -23,8 +24,9 @@ userSchema.pre('save', function(next) {
     bcrypt.hash(user.password, salt, null, function(err, hash) {
       if (err) return next(err)
 
-      // Overwrite plaint text password with encrypted password
+      // Overwrite plain text password with hashed password
       user.password = hash
+      user.salt = salt
       next()
     })
   })

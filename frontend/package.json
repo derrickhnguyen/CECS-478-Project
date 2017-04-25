@@ -8,12 +8,15 @@
   },
   "dependencies": {
     "axios": "^0.16.1",
+    "bcryptjs": "^2.4.3",
+    "crypto-js": "^3.1.9-1",
     "react": "16.0.0-alpha.6",
     "react-native": "^0.43.1",
     "react-native-fs": "^2.1.0-rc.1",
     "react-native-openpgp": "^1.0.3",
     "react-native-randombytes": "^2.2.0",
     "react-native-router-flux": "^3.38.0",
+    "react-native-rsa": "0.0.3",
     "react-redux": "^5.0.4",
     "redux": "^3.6.0",
     "redux-thunk": "^2.2.0"

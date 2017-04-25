@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { Actions } from 'react-native-router-flux'
-import * as openpgp from 'react-native-openpgp'
+import RSAKey from 'react-native-rsa'
 import RNFS from 'react-native-fs'
 import { secret } from '../../config'
 import {
@@ -57,7 +57,7 @@ export const loginUser = ({ email, password }) => {
     if(email === '' || password === '') {
       loginUserFail(dispatch, emailPasswordEmpty)
     } else {
-      axios.post('http:10.0.2.2:5000/signin', { email, password })
+      axios.post('https://miningforgoldstein.me/signin', { email, password })
         .then(res => loginUserSuccess(dispatch, res.data))
         .catch(() => {
           loginUserFail(dispatch, loginFailed)
@@ -79,27 +79,20 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
     } else if (!email.includes('@')) {
       loginUserFail(dispatch, invalidEmail)
     } else {
-      axios.post('http:10.0.2.2:5000/signup', { firstname, lastname, email, password })
+      axios.post('https://miningforgoldstein.me/signup', { firstname, lastname, email, password })
         .then((res) => {
-          const options = {
-            userIds: [{ name: `${firstname} ${lastname}, <${email}>` }],
-            numBits: 2048,
-            passphrase: secret
-          }
+          const rsa = new RSAKey()
+          rsa.generate(2048, '10001')
+          const publicKey = rsa.getPublicString()
+          const privateKey = rsa.getPrivateString()
 
-          openpgp.generateKey(options)
-            .then((key) => {
-              const pubPath = RNFS.DocumentDirectoryPath + '/public-key.txt'
-              RNFS.writeFile(pubPath, key.publicKeyArmored, 'utf8')
+          const pubPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-publickey.txt`
+          RNFS.writeFile(pubPath, publicKey, 'utf8')
+            .then((success) => {
+              const privPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-private-key.txt`
+              RNFS.writeFile(privPath, privateKey, 'utf8')
                 .then((success) => {
-                  const privPath = RNFS.DocumentDirectoryPath + '/private-key.txt'
-                  RNFS.writeFile(privPath, key.privateKeyArmored, 'utf8')
-                    .then((success) => {
-                      signupUserSuccess(dispatch, res.data)
-                    })
-                    .catch((err) => {
-                      signupUserFail(dispatch, keyGenerationFail)
-                    })
+                  signupUserSuccess(dispatch, res.data)
                 })
                 .catch((err) => {
                   signupUserFail(dispatch, keyGenerationFail)
