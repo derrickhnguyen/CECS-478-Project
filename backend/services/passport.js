@@ -4,6 +4,7 @@ const config = require('../config')
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const LocalStrategy = require('passport-local')
+const RandomString = require('randomstring')
 
 // Create local strategy.
 const localOptions = { usernameField: 'email' }
@@ -16,12 +17,7 @@ const localLogin = new LocalStrategy(localOptions, (email, password, done) => {
 
     if (!user) return done(null, false)
 
-    // Compare passwords - is 'password' equal to 'user.password'?
-    user.comparePassword(password, (err, isMatch) => {
-      if (err) return done(err)
-      if (!isMatch) return done(null, false)
-      return done(null, user)
-    })
+    return done(null, { salt: user.salt, challenge: RandomString.generate() })
   });
 });
 

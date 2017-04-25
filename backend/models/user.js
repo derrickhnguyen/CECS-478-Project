@@ -20,25 +20,19 @@ userSchema.pre('save', function(next) {
   bcrypt.genSalt(10, function(err, salt) {
     if (err) return next(err)
 
+    // Overwrite initial salt value
+    user.salt = salt
+    
     // Hash (encrypt) password using the salt
     bcrypt.hash(user.password, salt, null, function(err, hash) {
       if (err) return next(err)
 
       // Overwrite plain text password with hashed password
       user.password = hash
-      user.salt = salt
       next()
     })
   })
 })
-
-userSchema.methods.comparePassword = function(candidatePassword, callback) {
-  bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
-    if (err) return callback(err)
-
-    callback(null, isMatch)
-  })
-}
 
 // Create the model class
 const User = mongoose.model('user', userSchema)

@@ -2,6 +2,8 @@ import axios from 'axios'
 import { Actions } from 'react-native-router-flux'
 import RSAKey from 'react-native-rsa'
 import RNFS from 'react-native-fs'
+import bcrypt from 'bcryptjs'
+import crypto from ('crypto-js')
 import { secret } from '../../config'
 import {
   AUTH_FIRST_NAME_CHANGED,
@@ -57,11 +59,24 @@ export const loginUser = ({ email, password }) => {
     if(email === '' || password === '') {
       loginUserFail(dispatch, emailPasswordEmpty)
     } else {
-      axios.post('https://miningforgoldstein.me/signin', { email, password })
-        .then(res => loginUserSuccess(dispatch, res.data))
+      axios.post('https://miningforgoldstein.me/signin1', { email, password })
+        .then((res) =>{
+          const { salt, challenge } = res.data
+          bcrypt.hash(password, salt, (err, hash) => {
+            const key = hash
+            const tag = crypto.HmacSHA256(challenge, key).toString()
+            axios.post('https://miningforgoldstein.me/signin2', { email, challange, tag })
+              .then((res) => {
+                loginUserSuccess(dispatch, res.data)
+              })
+              .catch(() => {
+                loginUserFail(dispatch, loginFailed)
+              })
+          })
+        })
         .catch(() => {
           loginUserFail(dispatch, loginFailed)
-      })
+        })
     }
   }
 }

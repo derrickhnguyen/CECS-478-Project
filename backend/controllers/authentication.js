@@ -1,20 +1,37 @@
 const jwt = require('jwt-simple')
 const User = require('../models/user')
 const config = require('../config')
+const CryptoJS = require("crypto-js")
 
 function tokenForUser(user) {
   const timestamp = new Date().getTime()
   return jwt.encode({ sub: user.id, iat: timestamp }, config.secret)
 }
 
-exports.signin = (req, res, next) => {
-  // User has already had their email and password auth'd
-  // We just need to give them a token.
-  res.send({
-    token: tokenForUser(req.user),
-    firstname: req.user.firstname,
-    lastname: req.user.lastname,
-    id: req.user._id
+exports.signin1 = (req, res, next) => {
+  res.status(201).send(req.user)
+}
+
+exports.signin2 = (req, res, next) => {
+  const { email, challenge, tag } = req.body
+  User.findOne({ email: email }, (err, user) => {
+    if (err) {
+      return next(err)
+    }
+
+    if(!user) {
+      return res.status(422).send({ error: 'Could not find user' })
+    }
+
+    const password = user.password;
+    const newTag = CryptoJS.HmacSHA256(challenge, password).toString()
+    if(newTag === tag) {
+      res.status(201).send({
+        token: tokenForUser(user)
+      })
+    } else {
+      res.status(422).send({ error: 'Tags do not match' })
+    }
   })
 }
 
