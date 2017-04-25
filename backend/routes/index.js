@@ -2,10 +2,7 @@ const express = require('express')
 const router = express.Router()
 const passportService = require('../services/passport')
 const passport = require('passport')
-
-const requireSignin = passport.authenticate('local', { session: false })
 const requireAuth = passport.authenticate('jwt', { session: false })
-
 const Authentication = require('../controllers/authentication')
 const Chat = require('../controllers/chat')
 const User = require('../controllers/user')
@@ -15,10 +12,11 @@ router.get('/',  requireAuth, (req, res, next) => {
   res.status(201).send({ success: 'success' })
 })
 
-/* POST email and password to sign in. */
-router.post('/signin1', requireSignin, Authentication.signin1)
+/* POST Step 1 of signin authentication */
+router.post('/requestSaltAndChallenge', Authentication.requestSaltAndChallenge)
 
-router.post('/signin2', Authentication.signin2)
+/* Post Step 2 of signin authentication */
+router.post('/validateTag', Authentication.validateTag)
 
 /* POST email and password to sign up. */
 router.post('/signup', Authentication.signup)

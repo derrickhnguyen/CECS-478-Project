@@ -6,7 +6,7 @@ const Message = require('../models/message')
 * 
 * @param   {Object}   res
 * @param   {Object}   messageObj
-* @return  {ObjectID} thisUserID
+* @param  {ObjectID} thisUserID
 */
 const createNewChat = (res, otherUserId, thisUserId) => {
   const chatID = [thisUserId, otherUserId].sort().join(":")
@@ -47,7 +47,7 @@ const createNewChat = (res, otherUserId, thisUserId) => {
 * 
 * @param   {Object}   req
 * @param   {Object}   res
-* @return  {Function} next
+* @param  {Function} next
 */
 exports.getChat = (req, res, next) => {
   // Check if user is verified.
@@ -74,9 +74,19 @@ exports.getChat = (req, res, next) => {
   }
 }
 
+/*
+* Get every single chat that the user is in.
+* 
+* @param   {Object}   req
+* @param   {Object}   res
+* @param  {Function} next
+*/
 exports.getAllChat = (req, res, next) => {
+  // Check if user is verified.
   if(req.user) {
+    // Get users' ID
     const thisUserID = req.user._id
+    // Find all chat that has a chatID substring of the user's ID
     Chat.find({ chatID: {'$regex': thisUserID, '$options': 'i'} }, (err, chats) => {
       if (err) {
         res.status(500).send({ error: err })
@@ -94,7 +104,7 @@ exports.getAllChat = (req, res, next) => {
 * 
 * @param   {Object}   req
 * @param   {Object}   res
-* @return  {Function} next
+* @param  {Function} next
 */
 exports.putChat = (req, res, next) => {
   // Check if user is verified.
@@ -161,7 +171,7 @@ exports.putChat = (req, res, next) => {
 * 
 * @param   {Object}   req
 * @param   {Object}   res
-* @return  {Function} next
+* @param  {Function} next
 */
 exports.postChat = (req, res, next) => {
   // Check if user is verified.

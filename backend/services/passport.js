@@ -3,23 +3,6 @@ const User = require('../models/user')
 const config = require('../config')
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
-const LocalStrategy = require('passport-local')
-const RandomString = require('randomstring')
-
-// Create local strategy.
-const localOptions = { usernameField: 'email' }
-const localLogin = new LocalStrategy(localOptions, (email, password, done) => {
-  // Verify this email and password, call done with the user
-  // if it is the correct email and password
-  // otherwise, call done with false.
-  User.findOne({ email: email }, (err, user) => {
-    if (err) return done(err)
-
-    if (!user) return done(null, false)
-
-    return done(null, { salt: user.salt, challenge: RandomString.generate() })
-  });
-});
 
 // Setup options for JWT Strategy.
 const jwtOptions = {
@@ -45,4 +28,3 @@ const jwtLogin = new JwtStrategy(jwtOptions, (payload, done) => {
 
 // Tell passport to use this strategy.
 passport.use(jwtLogin)
-passport.use(localLogin)

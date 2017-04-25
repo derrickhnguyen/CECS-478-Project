@@ -20,6 +20,12 @@ import {
   SIGNUP_LEFT_CLICKED
 } from './types'
 
+/*
+* Triggers whenever firstname input changes.
+* 
+* @param   {String}   text
+* @return  {Object}   
+*/
 export const authFirstNameChanged = (text) => {
   return {
     type: AUTH_FIRST_NAME_CHANGED,
@@ -27,6 +33,12 @@ export const authFirstNameChanged = (text) => {
   }
 }
 
+/*
+* Triggers whenever lastname input changes.
+* 
+* @param   {String}   text
+* @return  {Object}   
+*/
 export const authLastNameChanged = (text) => {
   return {
     type: AUTH_LAST_NAME_CHANGED,
@@ -34,6 +46,12 @@ export const authLastNameChanged = (text) => {
   }
 }
 
+/*
+* Triggers whenever email input changes.
+* 
+* @param   {String}   text
+* @return  {Object}   
+*/
 export const authEmailChanged = (text) => {
   return {
     type: AUTH_EMAIL_CHANGED,
@@ -41,6 +59,12 @@ export const authEmailChanged = (text) => {
   }
 }
 
+/*
+* Triggers whenever password input changes.
+* 
+* @param   {String}   text
+* @return  {Object}   
+*/
 export const authPasswordChanged = (text) => {
   return {
     type: AUTH_PASSWORD_CHANGED,
@@ -48,33 +72,59 @@ export const authPasswordChanged = (text) => {
   }
 }
 
+/*
+* Checks to see if user can be authenticated with the provided
+* parameters by implementing 'REMOTE LOGIN'.
+* 
+* @param   {object}   = { email:String, password:String }
+*/
 export const loginUser = ({ email, password }) => {
+  // Extract error messages from object.
   const { emailPasswordEmpty, loginFailed } = errorMsgs
 
+  // Send an action type of LOGIN_USER to indicate
+  // that request is being processed.
   return (dispatch) => {
     dispatch({
       type: LOGIN_USER
     })
 
-    if(email === '' || password === '') {
+    // Make sure email and password exists.
+    if (email === '' || password === '') {
       loginUserFail(dispatch, emailPasswordEmpty)
     } else {
-      axios.post('https://miningforgoldstein.me/signin1', { email })
+      // Make HTTP POST request to receive salt and challenge
+      axios.post('https://miningforgoldstein.me/requestSaltAndChallenge', { email })
         .then((res) =>{
+          // Extract salt and challenge from the response.
           const { salt, challenge } = res.data
+
+          // Hash the password with the given salt.
           bcrypt.hash(password, salt, (err, hash) => {
-            const key = hash
-            const tag = crypto.HmacSHA256(challenge, key).toString()
-            axios.post('https://miningforgoldstein.me/signin2', { email, challange, tag })
-              .then((res) => {
-                loginUserSuccess(dispatch, res.data)
-              })
-              .catch(() => {
-                loginUserFail(dispatch, loginFailed)
-              })
+            if (err) {
+              // Respond with a client error.
+              loginUserFail(dispatch, loginFailed)
+            } else {
+              // With the given hash password, create a tag with the hashed password
+              // and challenge.
+              const key = hash
+              const tag = crypto.HmacSHA256(challenge, key).toString()
+              
+              //Make HTTP Post to request for token.
+              axios.post('https://miningforgoldstein.me/validateTag', { email, challenge, tag })
+                .then((res) => {
+                  // Token request was successful.
+                  loginUserSuccess(dispatch, res.data)
+                })
+                .catch(() => {
+                  // Token request was unsuccessful.
+                  loginUserFail(dispatch, loginFailed)
+                })
+            }
           })
         })
         .catch(() => {
+          // Salt and challenge request was unsuccessful.
           loginUserFail(dispatch, loginFailed)
         })
     }
@@ -89,7 +139,7 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
       type: SIGNUP_USER
     })
 
-    if(firstname === '' || lastname === '' || email === '' || password === '') {
+    if (firstname === '' || lastname === '' || email === '' || password === '') {
       signupUserFail(dispatch, emptyInput)
     } else if (!email.includes('@')) {
       loginUserFail(dispatch, invalidEmail)
