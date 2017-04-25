@@ -1,5 +1,8 @@
 import axios from 'axios'
 import { Actions } from 'react-native-router-flux'
+import * as openpgp from 'react-native-openpgp'
+import RNFS from 'react-native-fs'
+import { secret } from '../../config'
 import {
   AUTH_FIRST_NAME_CHANGED,
   AUTH_LAST_NAME_CHANGED,
@@ -64,7 +67,7 @@ export const loginUser = ({ email, password }) => {
 }
 
 export const signupUser = ({ firstname, lastname, email, password }) => {
-  const { emptyInput, signupFailed, invalidEmail } = errorMsgs
+  const { emptyInput, signupFailed, invalidEmail, keyGenerationFail } = errorMsgs
 
   return (dispatch) => {
     dispatch({
@@ -78,7 +81,33 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
     } else {
       axios.post('http:10.0.2.2:5000/signup', { firstname, lastname, email, password })
         .then((res) => {
-          signupUserSuccess(dispatch, res.data)
+          const options = {
+            userIds: [{ name: `${firstname} ${lastname}, <${email}>` }],
+            numBits: 2048,
+            passphrase: secret
+          }
+
+          openpgp.generateKey(options)
+            .then((key) => {
+              const pubPath = RNFS.DocumentDirectoryPath + '/public-key.txt'
+              RNFS.writeFile(pubPath, key.publicKeyArmored, 'utf8')
+                .then((success) => {
+                  const privPath = RNFS.DocumentDirectoryPath + '/private-key.txt'
+                  RNFS.writeFile(privPath, key.privateKeyArmored, 'utf8')
+                    .then((success) => {
+                      signupUserSuccess(dispatch, res.data)
+                    })
+                    .catch((err) => {
+                      signupUserFail(dispatch, keyGenerationFail)
+                    })
+                })
+                .catch((err) => {
+                  signupUserFail(dispatch, keyGenerationFail)
+                })
+            })
+            .catch((err) => {
+              signupUserFail(dispatch, keyGenerationFail)
+            })
         })
         .catch((err) => {
           signupUserFail(dispatch, signupFailed)
@@ -154,5 +183,6 @@ const errorMsgs = {
   loginFailed: 'Login failed',
   emptyInput: 'Please fill out every input',
   signupFailed: 'Signup failed',
-  invalidEmail: 'Please enter a valid email'
+  invalidEmail: 'Please enter a valid email',
+  keyGenerationFail: 'Key pair generation failed'
 }
