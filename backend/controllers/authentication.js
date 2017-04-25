@@ -27,7 +27,10 @@ exports.signin2 = (req, res, next) => {
     const newTag = CryptoJS.HmacSHA256(challenge, password).toString()
     if(newTag === tag) {
       res.status(201).send({
-        token: tokenForUser(user)
+        token: tokenForUser(user),
+        firstname: user.firstname,
+        lastname: user.lastname,
+        id: user._id
       })
     } else {
       res.status(422).send({ error: 'Tags do not match' })

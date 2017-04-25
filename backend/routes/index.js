@@ -16,7 +16,7 @@ router.get('/',  requireAuth, (req, res, next) => {
 })
 
 /* POST email and password to sign in. */
-router.post('/signi1', requireSignin, Authentication.signin1)
+router.post('/signin1', requireSignin, Authentication.signin1)
 
 router.post('/signin2', Authentication.signin2)
 

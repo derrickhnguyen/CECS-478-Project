@@ -59,7 +59,7 @@ export const loginUser = ({ email, password }) => {
     if(email === '' || password === '') {
       loginUserFail(dispatch, emailPasswordEmpty)
     } else {
-      axios.post('https://miningforgoldstein.me/signin1', { email, password })
+      axios.post('https://miningforgoldstein.me/signin1', { email })
         .then((res) =>{
           const { salt, challenge } = res.data
           bcrypt.hash(password, salt, (err, hash) => {
