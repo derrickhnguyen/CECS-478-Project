@@ -1,10 +1,9 @@
 import axios from 'axios'
-import { Actions } from 'react-native-router-flux'
+import { Actions, ActionConst } from 'react-native-router-flux'
 import RSAKey from 'react-native-rsa'
 import RNFS from 'react-native-fs'
 import bcrypt from 'bcryptjs'
-import crypto from ('crypto-js')
-import { secret } from '../../config'
+import cryptojs from 'crypto-js'
 import {
   AUTH_FIRST_NAME_CHANGED,
   AUTH_LAST_NAME_CHANGED,
@@ -108,7 +107,7 @@ export const loginUser = ({ email, password }) => {
               // With the given hash password, create a tag with the hashed password
               // and challenge.
               const key = hash
-              const tag = crypto.HmacSHA256(challenge, key).toString()
+              const tag = cryptojs.HmacSHA256(challenge, key).toString()
               
               //Make HTTP Post to request for token.
               axios.post('https://miningforgoldstein.me/validateTag', { email, challenge, tag })
@@ -150,7 +149,6 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
           rsa.generate(2048, '10001')
           const publicKey = rsa.getPublicString()
           const privateKey = rsa.getPrivateString()
-
           const pubPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-publickey.txt`
           RNFS.writeFile(pubPath, publicKey, 'utf8')
             .then((success) => {
@@ -204,7 +202,7 @@ const loginUserSuccess = (dispatch, data) => {
     }
   })
 
-  Actions.main({title: `Welcome, ${firstname}`})
+  Actions.main({title: `Welcome, ${firstname}`, type: ActionConst.RESET})
 }
 
 const loginUserFail = (dispatch, errorMsg) => {

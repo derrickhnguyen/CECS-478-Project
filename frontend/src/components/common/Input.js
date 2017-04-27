@@ -1,24 +1,24 @@
 import React from 'react'
 import { TextInput, View, Text, StyleSheet } from 'react-native'
 
-const Input = ({ placeholder, value, onChangeText, secureTextEntry }) => {
-  const { inputStyle, containerStyle } = style
+const Input = ({ placeholder, value, onChangeText, secureTextEntry, style, innerStyle }) => {
+  const { inputStyle, containerStyle } = styles
 
   return (
-    <View style={containerStyle}>
+    <View style={[containerStyle, style]}>
       <TextInput
         secureTextEntry={secureTextEntry}
         autoCorrect={false}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        style={inputStyle} 
+        style={[inputStyle, innerStyle]} 
       />
     </View>
   )
 }
 
-const style= StyleSheet.create({
+const styles = StyleSheet.create({
   inputStyle: {
     color: '#000',
     paddingRight: 5,

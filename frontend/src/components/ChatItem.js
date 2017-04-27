@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, View, Image } from 'react-native'
+import { Text, View, Image, StyleSheet } from 'react-native'
 import { Actions } from 'react-native-router-flux'
 import { BorderCard, BorderCardSection, CardSection } from './common'
 
@@ -20,7 +20,7 @@ class ChatItem extends Component {
   }
 }
 
-const styles = {
+const styles = StyleSheet.create({
   containerStyle: {
     flex: 1,
     flexDirection: 'row',
@@ -37,6 +37,6 @@ const styles = {
     alignSelf: 'center',
     fontWeight: 'bold'
   }
-}
+})
 
 export default ChatItem

@@ -10,8 +10,8 @@ class ChatCreate extends Component {
   }
 
   onButtonPress() {
-    const { email, token } = this.props
-    this.props.createChat({ email, token })
+    const { email, token, userId } = this.props
+    this.props.createChat({ email, token, userId })
   }
 
   renderButton() {
@@ -58,11 +58,12 @@ const styles = {
 }
 
 const mapStateToProps = ({ auth, chatForm }) => {
-  const { token } = auth
+  const { token, userId } = auth
   const { email, chatFormError, loading } = chatForm
   return {
     email,
     token,
+    userId,
     chatFormError,
     loading
   }

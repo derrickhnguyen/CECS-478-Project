@@ -1,14 +1,19 @@
 import React, { Component } from 'react'
-import { Text } from 'react-native'
+import { Text, TouchableOpacity } from 'react-native'
 import { connect } from 'react-redux'
 import { Card, CardSection, ErrorMessage, Spinner } from './common'
-import { renderList } from '../actions'
+import { renderList, focusChat } from '../actions'
 import ChatItem from './ChatItem'
 
 class ChatList extends Component {
   componentWillMount() {
     const { token, userId } = this.props
     this.props.renderList({ token, userId })
+  }
+
+  onButtonPress(otherUserId, otherUserFirstname) {
+    const { token } = this.props
+    this.props.focusChat({ otherUserId, token, otherUserFirstname })
   }
 
   render() {
@@ -27,7 +32,14 @@ class ChatList extends Component {
       )
     } else {
       const list = listOfChats.map(chat => {
-        return <ChatItem key={chat.firstname} firstname={chat.firstname} lastname={chat.lastname} />
+        return (
+          <TouchableOpacity
+            key={`${chat.firstname} ${chat.lastname}`}
+            onPress={this.onButtonPress.bind(this, chat.otherUserId, chat.firstname)}
+          >
+            <ChatItem firstname={chat.firstname} lastname={chat.lastname} />
+          </TouchableOpacity>
+        )
       })
 
       return (
@@ -64,4 +76,4 @@ const mapStateToProps = ({ auth, chatList }) => {
   return { token, listOfChats, userId, loading }
 }
 
-export default connect(mapStateToProps, { renderList })(ChatList)
+export default connect(mapStateToProps, { renderList, focusChat })(ChatList)
