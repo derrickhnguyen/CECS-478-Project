@@ -20,16 +20,21 @@ class FocusChat extends Component {
 
   renderListView() {
     const { privateKey, publicKey, messages, otherUserFirstname } = this.props
-    if (messages.length !== 0 && privateKey !== '' && publicKey !== '') {
+    
+    if (publicKey === EMPTY_STATE || privateKey === EMPTY_STATE) {
+      return (
+        <ErrorMessage error={`Please, provide your private key and/or ${otherUserFirstname}'s public key`} />
+      )
+    } else if (messages.length === 0) {
+      return (
+        <ErrorMessage error={`There are currently no messages. To start, type anything down below and press 'Send'!`} />
+      )
+    } else {
       return (
         <ListView
           dataSource={this.dataSource}
           renderRow={this.renderRow}
         />  
-      )
-    } else {
-      return (
-        <ErrorMessage error={`Please, provide your private key and ${otherUserFirstname}'s public key`} />
       )
     }
   }
@@ -58,10 +63,11 @@ class FocusChat extends Component {
 
   render() {
     const { inputContainerStyle, inputStyle, inputInnerStyle, buttonStyle } = styles
-    const { input } = this.props
+    const { input, chatErrorMsg } = this.props
     return (
       <Card>
         {this.renderListView()}
+        <ErrorMessage error={chatErrorMsg} />
         <CardSection style={inputContainerStyle}>
           <Input
             onChangeText={this.onInputChange.bind(this)}
@@ -102,13 +108,15 @@ const mapStateToProps = ({ focusChat, auth }) => {
     input,
     otherUserId,
     otherUserFirstname,
-    privateKey,
-    publicKey
+    publicKey,
+    chatErrorMsg
   } = focusChat
 
   const {
     userId,
-    token } = auth
+    token,
+    privateKey
+  } = auth
 
   return {
     messages,
@@ -118,7 +126,8 @@ const mapStateToProps = ({ focusChat, auth }) => {
     otherUserFirstname,
     token,
     privateKey,
-    publicKey
+    publicKey,
+    chatErrorMsg
   }
 }
 

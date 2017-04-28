@@ -1,8 +1,6 @@
 import axios from 'axios'
 import { Actions, ActionConst } from 'react-native-router-flux'
 import RNFS from 'react-native-fs'
-import { AsyncStorage } from 'react-native'
-import Storage from 'react-native-storage'
 import { encryptor, decryptor } from '../crypto'
 import {
   CHAT_EMAIL_CHANGED,
@@ -12,7 +10,8 @@ import {
   RENDER_LIST,
   RENDER_LIST_SUCCESS,
   RENDER_LIST_FAIL,
-  RENDER_CHAT_SUCCESS,
+  RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
+  RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
   RENDER_CHAT_FAIL,
   CHAT_INPUT_CHANGED,
   PRIVATE_KEY_FILE_NAME_CHANGED,
@@ -20,7 +19,10 @@ import {
   FIND_KEYS,
   FIND_KEYS_SUCCESS,
   FIND_KEYS_FAIL,
-  MESSAGE_SENT,
+  FIND_PUBLIC_KEY_SUCCESS,
+  FIND_PUBLIC_KEY_FAIL,
+  MESSAGE_SENT_SUCCESSFUL,
+  MESSAGE_SENT_FAIL,
   EMPTY_KEYS
 } from './types'
 
@@ -35,9 +37,7 @@ export const createChat = ({ email, token, userId }) => {
   const { emptyEmail, chatCreationFail } = errorMsgs
 
   return (dispatch) => {
-    dispatch({
-      type: CREATE_CHAT
-    })
+    dispatch({ type: CREATE_CHAT })
 
     if(email === '') {
       createChatFail(dispatch, emptyEmail)
@@ -45,11 +45,13 @@ export const createChat = ({ email, token, userId }) => {
       const axiosInstance = axios.create({
         headers: {'authorization': token}
       })
+
       axiosInstance.get(`https://miningforgoldstein.me/userIdByEmail?email=${email}`)
-        .then(({ data }) => {
-          const otherUserID = data
+        .then(res => {
+          const otherUserID = res.data
+
           axiosInstance.post('https://miningforgoldstein.me/chat', { otherUserID })
-            .then((res) => {
+            .then(res => {
               axiosInstance.get('https://miningforgoldstein.me/allChat')
                 .then(({ data }) => {
                   if (data.length === 0) {
@@ -62,6 +64,7 @@ export const createChat = ({ email, token, userId }) => {
                     })
 
                     let itemsProcessed = 0
+
                     otherUserIds.forEach((id, index) => {
                       axiosInstance.get(`https://miningforgoldstein.me/userNameById?id=${id}`)
                         .then(result => {
@@ -69,34 +72,33 @@ export const createChat = ({ email, token, userId }) => {
                           data[index]['firstname'] = result.data.firstname
                           data[index]['lastname'] = result.data.lastname
                           data[index]['otherUserId'] = id
+
                           if (itemsProcessed === otherUserIds.length) {
-                            dispatch({
-                              type: CREATE_CHAT_SUCCESS
-                            })
-                            Actions.pop()
                             renderListSuccess(dispatch, data)
+                            Actions.pop()
+                            dispatch({ type: CREATE_CHAT_SUCCESS })
                           }
                         })
                         .catch(() => {
-                          Actions.pop()
                           renderListFail(dispatch, listRenderFail)
+                          Actions.pop()
                         })
                     })
                   }
                 })
                 .catch(() => {
-                  Actions.pop()
                   renderListFail(dispatch, listRenderFail)
+                  Actions.pop()
                 })
             })
             .catch(() => {
-              Actions.pop()
               renderListFail(dispatch, listRenderFail)
+              Actions.pop()
             })
         })
         .catch(() => {
-            Actions.pop()
             renderListFail(dispatch, listRenderFail)
+            Actions.pop()
         })
     }
   }
@@ -106,13 +108,12 @@ export const renderList = ({ token, userId }) => {
   const { listRenderFail } = errorMsgs
 
   return (dispatch) => {
-    dispatch({
-      type: RENDER_LIST
-    })
+    dispatch({ type: RENDER_LIST })
 
     const axiosInstance = axios.create({
       headers: {'authorization': token}
     })
+
     axiosInstance.get('https://miningforgoldstein.me/allChat')
       .then(({ data }) => {
         if (data.length === 0) {
@@ -125,6 +126,7 @@ export const renderList = ({ token, userId }) => {
           })
 
           let itemsProcessed = 0
+
           otherUserIds.forEach((id, index) => {
             axiosInstance.get(`https://miningforgoldstein.me/userNameById?id=${id}`)
               .then(result => {
@@ -150,6 +152,7 @@ export const renderList = ({ token, userId }) => {
 
 export const focusChat = ({ otherUserId, token, otherUserFirstname }) => {
   const { chatRenderFail } = errorMsgs
+
   return (dispatch) => {
     const axiosInstance = axios.create({
       headers: {'authorization': token}
@@ -157,18 +160,32 @@ export const focusChat = ({ otherUserId, token, otherUserFirstname }) => {
 
     axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
       .then(result => {
-        dispatch({
-          type: RENDER_CHAT_SUCCESS,
-          payload: {
-            messages: result.data,
-            otherUserId,
-            otherUserFirstname
-          }
-        })
+        storage.load({ key: otherUserId })
+          .then((publicKey) => {
+            dispatch({
+              type: RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
+              payload: {
+                messages: result.data,
+                publicKey,
+                otherUserId,
+                otherUserFirstname
+              }
+            })
+          })
+          .catch(() => {
+            dispatch({
+              type: RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
+              payload: {
+                messages: result.data,
+                otherUserId,
+                otherUserfirstname
+              }
+            })
+          })
 
         Actions.focusChat({title: otherUserFirstname})
       })
-      .catch((error) => {
+      .catch(() => {
         dispatch({
           type: RENDER_CHAT_FAIL,
           payload: chatRenderFail
@@ -187,7 +204,7 @@ export const chatInputChanged = (text) => {
 }
 
 export const sendMessage = ({ input, otherUserId, userId, token, publicKey }) => {
-  const { emptyKeys } = errorMsgs
+  const { emptyKeys, messageSendError } = errorMsgs
 
   return ((dispatch) => {
     if(publicKey === '') {
@@ -197,43 +214,23 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey }) =>
       })
     } else {
       const encryptedObject = encryptor(input, publicKey)
+
       const axiosInstance = axios.create({
         headers: {'authorization': token}
       })
 
       axiosInstance.put(`https://miningforgoldstein.me/chat`, { otherUserID: otherUserId, message: encryptedObject })
-        .then((response) => {
-          dispatch({
-            type: MESSAGE_SENT
-          })
-
-          const storage = new Storage({
-            size: 1000,
-            storageBackend: AsyncStorage,
-            defaulExpires: null,
-            enableCache: true
-          })
-
-          storage.save({
-            key: `${otherUserId}`,
-            rawData: {
-              message: input
-            },
-            expires: null
-          })
+        .then(() => {
+          dispatch({ type: MESSAGE_SENT_SUCCESSFUL })
         })
-        .catch((err) => {
-          console.log(err)
+        .catch(() => {
+          dispatch({
+            type: MESSAGE_SENT_FAIL,
+            payload: messageSendError
+          })
         })
     }
   })
-}
-
-export const privateKeyFileNameChanged = (text) => {
-  return {
-    type: PRIVATE_KEY_FILE_NAME_CHANGED,
-    payload: text
-  }
 }
 
 export const publicKeyFileNameChanged = (text) => {
@@ -243,37 +240,27 @@ export const publicKeyFileNameChanged = (text) => {
   }
 }
 
-export const findKeys = ({ privateKeyFileName, publicKeyFileName }) => {
-  const { emptyKeyInputs, keyFindFail } = errorMsgs
+export const findPublicKey = ({ publicKeyFileName, otherUserId }) => {
+  const { emptyKeyInput, keyFindFail } = errorMsgs
 
   return (dispatch) => {
-    dispatch({
-      type: FIND_KEYS
-    })
+    dispatch({ type: FIND_KEYS })
 
-    if (privateKeyFileName === '' || publicKeyFileName === '') {
-      findKeyFail(dispatch, emptyKeyInputs)
+    if (publicKeyFileName === '') {
+      findPublicKeyFail(dispatch, emptyKeyInput)
     } else {
-      RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${privateKeyFileName}.txt`)
-        .then((privFile) => {
-          RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${publicKeyFileName}.txt`)
-            .then((pubFile) => {
-              dispatch({
-                type: FIND_KEYS_SUCCESS,
-                payload: {
-                  privateKey: privFile,
-                  publicKey: pubFile
-                }
-              })
+      RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${publicKeyFileName}.txt`)
+        .then((publicKey) => {
+          storage.save({
+            key: otherUserId,
+            rawData: { publicKey },
+            expires: null
+          })
 
-              Actions.pop()
-            })
-            .catch((err) => {
-              findKeyFail(dispatch, keyFindFail)
-            })
+          findPublicKeySuccess(dispatch, publicKey)
         })
-        .catch((err) => {
-          findKeyFail(dispatch, keyFindFail)
+        .catch(() => {
+          findPublicKeyFail(dispatch, keyFindFail)
         })
     }
   }
@@ -300,6 +287,31 @@ const renderListFail = (dispatch, errorMsg) => {
   })
 }
 
+const findPublicKeySuccess = (dispatch, publicKey) => {
+  dispatch({
+    type: FIND_PUBLIC_KEY_SUCCESS
+    payload: publicKey
+  })
+
+  Actions.pop()
+}
+
+const findPublicKeyFail = (dispatch, errorMsg) => {
+  dispatch({
+    type: FIND_PUBLIC_KEY_FAIL
+    payload: errorMsg
+  })
+}
+
+const findKeySuccess = (dispatch, publicKey) => {
+  dispatch({
+    type: FIND_KEYS_SUCCESS,
+    payload: publicKey
+  })
+
+  Actions.pop()
+}
+
 const findKeyFail = (dispatch, errorMsg) => {
   dispatch({
     type: FIND_KEYS_FAIL,
@@ -310,9 +322,10 @@ const findKeyFail = (dispatch, errorMsg) => {
 const errorMsgs = {
   emptyEmail: 'Please enter an email',
   chatCreationFail: 'Chat creation failed',
-  listRenderFail: 'Unable to retrieve chats',
-  chatRenderFail: 'Unable to retrieve chat',
-  emptyKeyInputs: 'Please enter key file names',
-  keyFindFail: 'Unable to retrieve keys',
-  emptyKeys: 'Please provide your keys'
+  listRenderFail: 'Unable to retrieve chats, please try again later',
+  chatRenderFail: 'Unable to retrieve chat, please try again later',
+  emptyKeyInput: 'Please enter key file name',
+  keyFindFail: 'Unable to retrieve key',
+  emptyKeys: 'Please provide your key',
+  messageSendError: 'Unable to send message'
 }

@@ -6,36 +6,32 @@ import {
 } from '../actions/types'
 
 const INITIAL_STATE = {
-  email: '',
+  email: EMPTY_STATE,
   loading: false,
-  chatFormError: ''
+  chatFormError: EMPTY_STATE
 }
 
 export default (state = INITIAL_STATE, action) => {
-  switch (action.type) {
+  const { type, payload } = action
+  switch (type) {
     case CHAT_EMAIL_CHANGED:
       return {
         ...state,
-        email: action.payload
+        email: payload
       }
     case CREATE_CHAT:
       return {
-        ...state,
-        INITIAL_STATE,
+        ...INITIAL_STATE,
         loading: true
       }
     case CREATE_CHAT_FAIL:
       return {
-        ...state,
         ...INITIAL_STATE,
-        loading: false,
-        chatFormError: action.payload
+        chatFormError: payload
       }
     case CREATE_CHAT_SUCCESS:
       return {
-        ...state,
-        ...INITIAL_STATE,
-        loading: false
+        ...INITIAL_STATE
       }
     default:
       return state

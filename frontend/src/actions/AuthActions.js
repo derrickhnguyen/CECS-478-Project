@@ -84,9 +84,7 @@ export const loginUser = ({ email, password }) => {
   // Send an action type of LOGIN_USER to indicate
   // that request is being processed.
   return (dispatch) => {
-    dispatch({
-      type: LOGIN_USER
-    })
+    dispatch({ type: LOGIN_USER })
 
     // Make sure email and password exists.
     if (email === '' || password === '') {
@@ -95,13 +93,14 @@ export const loginUser = ({ email, password }) => {
       // Make HTTP POST request to receive salt and challenge
       axios.post('https://miningforgoldstein.me/requestSaltAndChallenge', { email })
         .then((res) =>{
-          // Extract salt and challenge from the response.
+          // If POST request is successful, extract salt and 
+          // challenge from the response.
           const { salt, challenge } = res.data
 
           // Hash the password with the given salt.
           bcrypt.hash(password, salt, (err, hash) => {
             if (err) {
-              // Respond with a client error.
+              // If there is an error, respond with a client error.
               loginUserFail(dispatch, loginFailed)
             } else {
               // With the given hash password, create a tag with the hashed password
@@ -112,11 +111,31 @@ export const loginUser = ({ email, password }) => {
               //Make HTTP Post to request for token.
               axios.post('https://miningforgoldstein.me/validateTag', { email, challenge, tag })
                 .then((res) => {
-                  // Token request was successful.
-                  loginUserSuccess(dispatch, res.data)
+                  const { firstname, lastname } = res.data
+
+                  RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-private-key.txt`)
+                    .then((privateKey) => {
+                      // Save private key into local storage.
+                      storage.save({
+                        key: PRIVATE_KEY_STRING,
+                        rawData: privateKey,
+                        expires: null
+                      })
+
+                      res.data[PRIVATE_KEY_STRING] = privateKey
+
+                      // Send the appropriate response message 
+                      // with the response data.
+                      loginUserSuccess(dispatch, res.data)
+                    })
+                    .catch(() => {
+                      // If private key was unable to be fetched,
+                      // send the appropriate response message.
+                      loginUserFail(dispatch, loginFailed)
+                    })
                 })
                 .catch(() => {
-                  // Token request was unsuccessful.
+                  // Login user request was unsuccessful.
                   loginUserFail(dispatch, loginFailed)
                 })
             }
@@ -130,81 +149,140 @@ export const loginUser = ({ email, password }) => {
   }
 }
 
+/*
+* Signs up a user if email is not taken. Once sign up is successful, a 
+* public and private key will be generated and will be stored in the
+* user's phone in, '/storage/emulated/0/Android/data/com.frontend/files'.
+* 
+* @param   {object}   = { firstname:String, lastname:String, email:String, password:String }
+*/
 export const signupUser = ({ firstname, lastname, email, password }) => {
+  // Extract error messages from the object, errorMsgs.
   const { emptyInput, signupFailed, invalidEmail, keyGenerationFail } = errorMsgs
 
   return (dispatch) => {
-    dispatch({
-      type: SIGNUP_USER
-    })
+    // Indicated to the user that there is an attempt
+    // to sign them up.
+    dispatch({ type: SIGNUP_USER })
 
+    // Make sure there are no empty inputs.
     if (firstname === '' || lastname === '' || email === '' || password === '') {
+      // Send the appropriate response if there are empty inputs.
       signupUserFail(dispatch, emptyInput)
     } else if (!email.includes('@')) {
-      loginUserFail(dispatch, invalidEmail)
+      // Send the appropriate response if the user does not has a '@' sign
+      // in the email input.
+      signupUserFail(dispatch, invalidEmail)
     } else {
+      // Send a POST request with the given input that the user has given.
       axios.post('https://miningforgoldstein.me/signup', { firstname, lastname, email, password })
         .then((res) => {
+          // If the POST request is successful, generate a new RSA key pair.
           const rsa = new RSAKey()
           rsa.generate(2048, '10001')
           const publicKey = rsa.getPublicString()
           const privateKey = rsa.getPrivateString()
+
+          // Declare the path of where to store the public key.
           const pubPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-publickey.txt`
+
+          // Write the public key to declared file path.
           RNFS.writeFile(pubPath, publicKey, 'utf8')
             .then((success) => {
+              // If public key was saved successfully, Declare the path of 
+              // where to store the private key.
               const privPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-private-key.txt`
+
+              // Write the private key to declared file path
               RNFS.writeFile(privPath, privateKey, 'utf8')
                 .then((success) => {
+                  // Save private key into local storage.
+                  storage.save({
+                    key: PRIVATE_KEY_STRING,
+                    rawData: privateKey,
+                    expires: null
+                  })
+
+                  res.data[PRIVATE_KEY_STRING] = privateKey
+
+                  // If private key was saved successfully, send the appropriate
+                  // reponse to client.
                   signupUserSuccess(dispatch, res.data)
                 })
                 .catch((err) => {
+                  // If private key was saved unsuccessfully, send the appropriate
+                  // reponse to client.
                   signupUserFail(dispatch, keyGenerationFail)
                 })
             })
             .catch((err) => {
+              // If public key was saved unsuccessfully, send the appropriate
+              // reponse to client.
               signupUserFail(dispatch, keyGenerationFail)
             })
         })
         .catch((err) => {
+          // If sign up POST requenst is unsuccessfull, send the appropriate
+          // response to client.
           signupUserFail(dispatch, signupFailed)
       })
     }
   }
 }
 
+// If sign up button was clicked, dispatch
+// a SIGNUP_CLICKED type to reset appropriate
+// data, then change to Signup screen.
 export const signupClicked = () => {
   return (dispatch) => {
-    dispatch({
-      type: SIGNUP_CLICKED
-    })
-
+    dispatch({ type: SIGNUP_CLICKED })
     Actions.signup()
   }
 }
 
+// If back button on Signup screen is clicked,
+// dispach a SIGNUP_LEFT_CLICKED type to reset
+// appropriate data, the pops back to Sigin screen.
 export const signupLeftClicked = () => {
   return (dispatch) => {
-    dispatch({
-      type: SIGNUP_LEFT_CLICKED
-    })
+    dispatch({ type: SIGNUP_LEFT_CLICKED })
   }
 }
 
+/*
+* Helper function to dispatch LOGIN_USER_SUCCESS
+* type. It will return the appropriate data to
+* popular the user's main screen.
+* 
+* @param    {function}    dispatch
+* @param    {object}      data
+*/
 const loginUserSuccess = (dispatch, data) => {
-  const { firstname, lastname, token, id } = data
+  const { firstname, lastname, token, id, privateKey } = data
   dispatch({
     type: LOGIN_USER_SUCCESS,
     payload: {
-      firstname: firstname,
-      lastname: lastname,
-      token: token,
-      userId: id
+      userId: id,
+      firstname,
+      lastname,
+      privateKey,
+      token
     }
   })
 
+  // Changes to user's main screen.
+  // ActionConst.RESET unables the users to press the back
+  // button to go back to the Login screen.
   Actions.main({title: `Welcome, ${firstname}`, type: ActionConst.RESET})
 }
 
+/*
+* Helper function to dispatch LOGIN_USER_FAIL
+* type. It will return an errorMsg.
+* 
+* @param    {function}    dispatch
+* @param    {String}      errorMsg
+*/
 const loginUserFail = (dispatch, errorMsg) => {
   dispatch({
     type: LOGIN_USER_FAIL,
@@ -212,21 +290,40 @@ const loginUserFail = (dispatch, errorMsg) => {
   })
 }
 
+/*
+* Helper function to dispatch SIGNUP_USER_SUCCESS
+* type. It will return the appropriate data to
+* popular the user's main screen.
+* 
+* @param    {function}    dispatch
+* @param    {object}      data
+*/
 const signupUserSuccess = (dispatch, data) => {
-  const { firstname, lastname, token, id } = data
+  const { firstname, lastname, token, id, privateKey } = data
   dispatch({
     type: SIGNUP_USER_SUCCESS,
     payload: {
-      firstname: firstname,
-      lastname: lastname,
-      token: token,
-      userId: id
+      userId: id,
+      firstname,
+      lastname,
+      privateKey,
+      token
     }
   })
 
-  Actions.main({title: `Welcome, ${firstname}`})
+  // Changes to user's main screen.
+  // ActionConst.RESET unables the users to press the back
+  // button to go back to the Login screen.
+  Actions.main({title: `Welcome, ${firstname}`, type: ActionConst.RESET})
 }
 
+/*
+* Helper function to dispatch SIGNUP_USER_FAIL
+* type. It will return an errorMsg.
+* 
+* @param    {function}    dispatch
+* @param    {String}      errorMsg
+*/
 const signupUserFail = (dispatch, errorMsg) => {
   dispatch({
     type: SIGNUP_USER_FAIL,

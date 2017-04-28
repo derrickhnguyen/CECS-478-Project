@@ -14,90 +14,92 @@ import {
 } from '../actions/types'
 
 const INITIAL_STATE = {
-  firstname: '',
-  lastname: '',
-  email: '',
-  password: '',
-  userId: '',
-  token: '',
-  authError: '',
+  firstname: EMPTY_STATE,
+  lastname: EMPTY_STATE,
+  email: EMPTY_STATE,
+  password: EMPTY_STATE,
+  userId: EMPTY_STATE,
+  token: EMPTY_STATE,
+  privateKey: EMPTY_STATE,
+  authError: EMPTY_STATE,
   loading: false
 }
 
 export default (state = INITIAL_STATE, action) => {
-  switch (action.type) {
+  const { type, payload } = action
+  switch (type) {
     case AUTH_FIRST_NAME_CHANGED:
       return {
         ...state,
-        firstname: action.payload
+        firstname: payload
       }
     case AUTH_LAST_NAME_CHANGED:
       return {
         ...state,
-        lastname: action.payload
+        lastname: payload
       }
     case AUTH_EMAIL_CHANGED:
       return { 
         ...state,
-        email: action.payload
+        email: payload
       }
     case AUTH_PASSWORD_CHANGED:
       return {
         ...state,
-        password: action.payload
+        password: payload
       }
     case LOGIN_USER:
       return {
         ...state,
         loading: true,
-        authError: ''
+        authError: EMPTY_STATE
       }
     case SIGNUP_USER:
       return {
         ...state,
         loading: true,
-        authError: ''
+        authError: EMPTY_STATE
       }
     case LOGIN_USER_SUCCESS:
       return {
-        ...state,
         ...INITIAL_STATE,
-        firstname: action.payload.firstname,
-        lastname: action.payload.lastname,
-        token: action.payload.token,
-        userId: action.payload.userId
+        firstname: payload.firstname,
+        lastname: payload.lastname,
+        token: payload.token,
+        userId: payload.userId,
+        privateKey: payload.privateKey
       }
     case LOGIN_USER_FAIL:
       return {
         ...state,
-        authError: action.payload,
-        password: '',
+        authError: payload,
+        email: EMPTY_STATE,
+        password: EMPTY_STATE,
         loading: false
       }
     case SIGNUP_USER_SUCCESS:
       return {
-        ...state,
         ...INITIAL_STATE,
-        firstname: action.payload.firstname,
-        lastname: action.payload.lastname,
-        token: action.payload.token,
-        userId: action.payload.userId
+        firstname: payload.firstname,
+        lastname: payload.lastname,
+        token: payload.token,
+        userId: payload.userId,
+        privateKey: payload.privateKey
       }
     case SIGNUP_USER_FAIL:
       return {
         ...state,
-        authError: action.payload,
-        password: '',
+        authError: payload,
+        email: EMPTY_STATE,
+        password: EMPTY_STATE,
         loading: false
       }
     case SIGNUP_CLICKED:
       return {
-        ...state,
         ...INITIAL_STATE
       }
     case SIGNUP_LEFT_CLICKED:
       return {
-        ...state,
         ...INITIAL_STATE
       }
     default:

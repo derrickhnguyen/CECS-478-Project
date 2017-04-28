@@ -11,24 +11,22 @@ const INITIAL_STATE = {
 }
 
 export default (state = INITIAL_STATE, action) => {
-  switch(action.type) {
+  const { type, payload } = action
+  switch(type) {
     case RENDER_LIST:
       return {
-        ...state,
         ...INITIAL_STATE,
         loading: true
       }
     case RENDER_LIST_SUCCESS:
       return {
-        ...state,
         ...INITIAL_STATE,
-        listOfChats: action.payload
+        listOfChats: payload
       }
     case RENDER_LIST_FAIL:
       return {
-        ...state,
         ...INITIAL_STATE,
-        chatListError: action.payload
+        chatListError: payload
       }
     default:
       return state

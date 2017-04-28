@@ -2,20 +2,16 @@ import React, { Component } from 'react'
 import { Text } from 'react-native'
 import { connect } from 'react-redux'
 import { Card, CardSection, Input, Spinner, Button, ErrorMessage } from './common'
-import { findKeys, privateKeyFileNameChanged, publicKeyFileNameChanged } from '../actions'
+import { findPublicKey, publicKeyFileNameChanged } from '../actions'
 
 class KeyForm extends Component {
-  onPrivateKeyFileNameChange(text) {
-    this.props.privateKeyFileNameChanged(text)
-  }
-
-  onPublicKeyFielNameChange(text) {
+  onPublicKeyFileNameChange(text) {
     this.props.publicKeyFileNameChanged(text)
   }
 
   onButtonPress() {
-    const { privateKeyFileName, publicKeyFileName } = this.props
-    this.props.findKeys({ privateKeyFileName, publicKeyFileName })
+    const { publicKeyFileName, otherUserId } = this.props
+    this.props.findPublicKey({ publicKeyFileName, otherUserId })
   }
 
   renderButton() {
@@ -36,20 +32,13 @@ class KeyForm extends Component {
     return (
       <Card>
         <CardSection>
-          <Text style={textStyle}>Enter your file names (no extension) that are in '/storage/emulated/0/Android/data/com.frontend/files'</Text>
-        </CardSection>
-        <CardSection>
-          <Input
-            placeholder='Private Key File Name'
-            value={this.props.privateKey}
-            onChangeText={this.onPrivateKeyFileNameChange.bind(this)}
-          />
+          <Text style={textStyle}>Enter the file name (no extension) that is in '/storage/emulated/0/Android/data/com.frontend/files'</Text>
         </CardSection>
         <CardSection>
           <Input
             placeholder='Public Key File Name'
             value={this.props.publicKey}
-            onChangeText={this.onPublicKeyFielNameChange.bind(this)}
+            onChangeText={this.onPublicKeyFileNameChange.bind(this)}
           />
         </CardSection>
         <ErrorMessage error={this.props.keyErrorMsg} />
@@ -69,12 +58,22 @@ const styles = {
 }
 
 const mapStateToProps = ({ focusChat }) => {
-  const { privateKeyFileName, publicKeyFileName, loading, keyErrorMsg } = focusChat
-  return { privateKeyFileName, publicKeyFileName, loading, keyErrorMsg }
+  const {
+    publicKeyFileName,
+    loading,
+    keyErrorMsg,
+    otherUserId 
+  } = focusChat
+
+  return {
+    publicKeyFileName,
+    loading,
+    keyErrorMsg,
+    otherUserId
+  }
 }
 
 export default connect(mapStateToProps, {
-  privateKeyFileNameChanged,
   publicKeyFileNameChanged,
-  findKeys
+  findPublicKey
 })(KeyForm)
