@@ -51,7 +51,7 @@ export const createChat = ({ email, token, userId }) => {
           const otherUserID = res.data
 
           axiosInstance.post('https://miningforgoldstein.me/chat', { otherUserID })
-            .then(res => {
+            .then(() => {
               axiosInstance.get('https://miningforgoldstein.me/allChat')
                 .then(({ data }) => {
                   if (data.length === 0) {
@@ -161,7 +161,7 @@ export const focusChat = ({ otherUserId, token, otherUserFirstname }) => {
     axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
       .then(result => {
         storage.load({ key: otherUserId })
-          .then((publicKey) => {
+          .then(({ publicKey }) => {
             dispatch({
               type: RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
               payload: {

@@ -118,7 +118,7 @@ export const loginUser = ({ email, password }) => {
                       // Save private key into local storage.
                       storage.save({
                         key: PRIVATE_KEY_STRING,
-                        rawData: privateKey,
+                        rawData: { privateKey },
                         expires: null
                       })
 
@@ -199,7 +199,7 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
                   // Save private key into local storage.
                   storage.save({
                     key: PRIVATE_KEY_STRING,
-                    rawData: privateKey,
+                    rawData: { privateKey },
                     expires: null
                   })
 
