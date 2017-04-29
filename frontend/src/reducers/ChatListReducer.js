@@ -1,3 +1,4 @@
+import * as GLOBAL from '../../global'
 import {
   RENDER_LIST,
   RENDER_LIST_SUCCESS,
@@ -7,7 +8,7 @@ import {
 const INITIAL_STATE = {
   listOfChats: [],
   loading: false,
-  chatListError: ''
+  chatListError: GLOBAL.EMPTY_STATE
 }
 
 export default (state = INITIAL_STATE, action) => {

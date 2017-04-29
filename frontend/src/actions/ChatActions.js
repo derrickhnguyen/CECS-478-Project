@@ -1,7 +1,9 @@
+import { ListView } from 'react-native'
 import axios from 'axios'
 import { Actions, ActionConst } from 'react-native-router-flux'
 import RNFS from 'react-native-fs'
 import { encryptor, decryptor } from '../crypto'
+import * as GLOBAL from '../../global'
 import {
   CHAT_EMAIL_CHANGED,
   CREATE_CHAT,
@@ -10,6 +12,7 @@ import {
   RENDER_LIST,
   RENDER_LIST_SUCCESS,
   RENDER_LIST_FAIL,
+  RENDER_CHAT_SUCCESS,
   RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
   RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
   RENDER_CHAT_FAIL,
@@ -48,7 +51,7 @@ export const chatEmailChanged = (text) => {
 */
 export const createChat = ({ email, token, userId }) => {
   // Extract error messages from object.
-  const { emptyEmail, chatCreationFail } = errorMsgs
+  const { emptyEmail, chatCreationFail, listRenderFail } = errorMsgs
 
   return (dispatch) => {
     // Send an action type of CREATE_CHAT to indicate
@@ -56,7 +59,7 @@ export const createChat = ({ email, token, userId }) => {
     dispatch({ type: CREATE_CHAT })
 
     // Make sure user inputs anything.
-    if(email === EMPTY_STATE) {
+    if(email === GLOBAL.EMPTY_STATE) {
       // Repond with the appropriate reponse
       // if users does not input anything.
       createChatFail(dispatch, emptyEmail)
@@ -119,9 +122,6 @@ export const createChat = ({ email, token, userId }) => {
                           // response.
                           renderListFail(dispatch, listRenderFail)
                           Actions.pop()
-
-                          // Break out of the for-loop.
-                          break;
                         })
                     })
                   }
@@ -136,15 +136,13 @@ export const createChat = ({ email, token, userId }) => {
             .catch(() => {
               // If the POST request to add a new chat fails,
               // return the appropriate error reponse.
-              renderListFail(dispatch, listRenderFail)
-              Actions.pop()
+              createChatFail(dispatch, chatCreationFail)
             })
         })
         .catch(() => {
           // If the GET request to retrieve the other user's ID fails,
           // return the appropriate error response.
-          renderListFail(dispatch, listRenderFail)
-          Actions.pop()
+          createChatFail(dispatch, chatCreationFail)
         })
     }
   }
@@ -241,7 +239,7 @@ export const focusChat = ({ otherUserId, token, otherUserFirstname }) => {
       .then(result => {
         // If GET request is successful, find the other user's public
         // key in local storage.
-        storage.load({ key: otherUserId })
+        GLOBAL.storage.load({ key: otherUserId })
           .then(({ publicKey }) => {
             // If public key is in local storage, then dispatch
             // a response to change states appropriately.
@@ -254,8 +252,10 @@ export const focusChat = ({ otherUserId, token, otherUserFirstname }) => {
                 otherUserFirstname
               }
             })
+
+            Actions.focusChat({title: otherUserFirstname})
           })
-          .catch(() => {
+          .catch((err) => {
             // If public key is not in local storage, then dispatch
             // a response to change states appropriately, but without
             // public key.
@@ -264,15 +264,14 @@ export const focusChat = ({ otherUserId, token, otherUserFirstname }) => {
               payload: {
                 messages: result.data,
                 otherUserId,
-                otherUserfirstname
+                otherUserFirstname
               }
             })
-          })
 
-        // Switch screen to focus chat screen.
-        Actions.focusChat({title: otherUserFirstname})
+            Actions.focusChat({title: otherUserFirstname})
+          })
       })
-      .catch(() => {
+      .catch((err) => {
         // If GET request to retrieve current chat is unsuccessful,
         // dispatch the appropriate error response.
         dispatch({
@@ -306,10 +305,10 @@ export const chatInputChanged = (text) => {
 */   
 export const sendMessage = ({ input, otherUserId, userId, token, publicKey }) => {
   // Extract error messages from object.
-  const { emptyKeys, messageSendError } = errorMsgs
+  const { emptyKeys, messageSendError, chatRenderFail } = errorMsgs
 
   return ((dispatch) => {
-    if(publicKey === EMPTY_STATE) {
+    if(publicKey === GLOBAL.EMPTY_STATE) {
       // Dispatch an client error response
       // if there is no public key.
       dispatch({
@@ -329,6 +328,24 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey }) =>
       // Make a PUT request to add new message to chat.
       axiosInstance.put(`https://miningforgoldstein.me/chat`, { otherUserID: otherUserId, message: encryptedObject })
         .then(() => {
+          axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
+            .then((result) => {
+              dispatch({
+                type: RENDER_CHAT_SUCCESS,
+                payload: {
+                  messages: result.data,
+                  dataSource: new ListView.DataSource({
+                    rowHasChanged: (r1, r2) => r1 !== r2
+                  }).cloneWithRows(result.data)
+                }
+              })
+            })
+            .catch(() => {
+              dispatch({
+                type: RENDER_CHAT_FAIL,
+                payload: chatRenderFail
+              })
+            })
           // If PUT request is successful, dispatch the appropriate response.
           dispatch({ type: MESSAGE_SENT_SUCCESSFUL })
         })
@@ -371,7 +388,7 @@ export const findPublicKey = ({ publicKeyFileName, otherUserId }) => {
     // that request is being processed.
     dispatch({ type: FIND_KEYS })
 
-    if (publicKeyFileName === EMPTY_STATE) {
+    if (publicKeyFileName === GLOBAL.EMPTY_STATE) {
       // Send the appropriate client error response
       // if user inputs empty.
       findPublicKeyFail(dispatch, emptyKeyInput)
@@ -380,7 +397,7 @@ export const findPublicKey = ({ publicKeyFileName, otherUserId }) => {
       RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${publicKeyFileName}.txt`)
         .then((publicKey) => {
           // If the file is found, save it in local storage.
-          storage.save({
+          GLOBAL.storage.save({
             key: otherUserId,
             rawData: { publicKey },
             expires: null
@@ -453,7 +470,7 @@ const renderListFail = (dispatch, errorMsg) => {
 */
 const findPublicKeySuccess = (dispatch, publicKey) => {
   dispatch({
-    type: FIND_PUBLIC_KEY_SUCCESS
+    type: FIND_PUBLIC_KEY_SUCCESS,
     payload: publicKey
   })
 
@@ -470,7 +487,7 @@ const findPublicKeySuccess = (dispatch, publicKey) => {
 */
 const findPublicKeyFail = (dispatch, errorMsg) => {
   dispatch({
-    type: FIND_PUBLIC_KEY_FAIL
+    type: FIND_PUBLIC_KEY_FAIL,
     payload: errorMsg
   })
 }

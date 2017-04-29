@@ -1,3 +1,4 @@
+import * as GLOBAL from '../../global'
 import {
   AUTH_FIRST_NAME_CHANGED,
   AUTH_LAST_NAME_CHANGED,
@@ -14,14 +15,14 @@ import {
 } from '../actions/types'
 
 const INITIAL_STATE = {
-  firstname: EMPTY_STATE,
-  lastname: EMPTY_STATE,
-  email: EMPTY_STATE,
-  password: EMPTY_STATE,
-  userId: EMPTY_STATE,
-  token: EMPTY_STATE,
-  privateKey: EMPTY_STATE,
-  authError: EMPTY_STATE,
+  firstname: GLOBAL.EMPTY_STATE,
+  lastname: GLOBAL.EMPTY_STATE,
+  email: GLOBAL.EMPTY_STATE,
+  password: GLOBAL.EMPTY_STATE,
+  userId: GLOBAL.EMPTY_STATE,
+  token: GLOBAL.EMPTY_STATE,
+  privateKey: GLOBAL.EMPTY_STATE,
+  authError: GLOBAL.EMPTY_STATE,
   loading: false
 }
 
@@ -52,13 +53,13 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         loading: true,
-        authError: EMPTY_STATE
+        authError: GLOBAL.EMPTY_STATE
       }
     case SIGNUP_USER:
       return {
         ...state,
         loading: true,
-        authError: EMPTY_STATE
+        authError: GLOBAL.EMPTY_STATE
       }
     case LOGIN_USER_SUCCESS:
       return {
@@ -73,8 +74,8 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         authError: payload,
-        email: EMPTY_STATE,
-        password: EMPTY_STATE,
+        email: GLOBAL.EMPTY_STATE,
+        password: GLOBAL.EMPTY_STATE,
         loading: false
       }
     case SIGNUP_USER_SUCCESS:
@@ -90,8 +91,8 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         authError: payload,
-        email: EMPTY_STATE,
-        password: EMPTY_STATE,
+        email: GLOBAL.EMPTY_STATE,
+        password: GLOBAL.EMPTY_STATE,
         loading: false
       }
     case SIGNUP_CLICKED:

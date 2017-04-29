@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { Input, Card, CardSection, Button, ErrorMessage } from './common'
 import { chatInputChanged, sendMessage } from '../actions'
 import MessageItem from './MessageItem'
+import * as GLOBAL from '../../global'
 
 class FocusChat extends Component {
   componentWillMount() {
@@ -15,13 +16,15 @@ class FocusChat extends Component {
   }
 
   renderRow(message) {
-    return <MessageItem message={message} />
+    return (
+      <MessageItem message={message} />
+    )
   }
 
   renderListView() {
-    const { privateKey, publicKey, messages, otherUserFirstname } = this.props
+    const { privateKey, publicKey, messages, otherUserFirstname, dataSource } = this.props
     
-    if (publicKey === EMPTY_STATE || privateKey === EMPTY_STATE) {
+    if (publicKey === GLOBAL.EMPTY_STATE || privateKey === GLOBAL.EMPTY_STATE) {
       return (
         <ErrorMessage error={`Please, provide your private key and/or ${otherUserFirstname}'s public key`} />
       )
@@ -32,8 +35,9 @@ class FocusChat extends Component {
     } else {
       return (
         <ListView
-          dataSource={this.dataSource}
+          dataSource={dataSource || this.dataSource}
           renderRow={this.renderRow}
+          enableEmptySections
         />  
       )
     }
@@ -109,7 +113,8 @@ const mapStateToProps = ({ focusChat, auth }) => {
     otherUserId,
     otherUserFirstname,
     publicKey,
-    chatErrorMsg
+    chatErrorMsg,
+    dataSource
   } = focusChat
 
   const {
@@ -127,7 +132,8 @@ const mapStateToProps = ({ focusChat, auth }) => {
     token,
     privateKey,
     publicKey,
-    chatErrorMsg
+    chatErrorMsg,
+    dataSource
   }
 }
 

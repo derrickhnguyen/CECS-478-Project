@@ -24,6 +24,7 @@ export const RENDER_LIST_SUCCESS = 'render_list_success'
 export const RENDER_LIST_FAIL = 'render_list_fail'
 
 /* Focus Chat */
+export const RENDER_CHAT_SUCCESS = 'render_chat_success'
 export const RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY = 'render_chat_success_with_public_key'
 export const RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY = 'render_chat_success_with_no_public_key'
 export const RENDER_CHAT_FAIL = 'render_chat_fail'

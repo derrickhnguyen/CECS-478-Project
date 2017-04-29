@@ -1,5 +1,7 @@
+import * as GLOBAL from '../../global'
 import {
-  RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,,
+  RENDER_CHAT_SUCCESS,
+  RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
   RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
   RENDER_CHAT_FAIL,
   CHAT_INPUT_CHANGED,
@@ -16,19 +18,28 @@ import {
 
 const INITIAL_STATE = {
   messages: [],
-  input: EMPTY_STATE,
-  chatErrorMsg: EMPTY_STATE,
-  otherUserId: EMPTY_STATE,
-  otherUserFirstname: EMPTY_STATE,
-  publicKeyFileName: EMPTY_STATE,
-  publicKey: EMPTY_STATE,
+  input: GLOBAL.EMPTY_STATE,
+  chatErrorMsg: GLOBAL.EMPTY_STATE,
+  otherUserId: GLOBAL.EMPTY_STATE,
+  otherUserFirstname: GLOBAL.EMPTY_STATE,
+  publicKeyFileName: GLOBAL.EMPTY_STATE,
+  publicKey: GLOBAL.EMPTY_STATE,
   loading: false,
-  keyErrorMsg: EMPTY_STATE
+  keyErrorMsg: GLOBAL.EMPTY_STATE,
+  dataSource: GLOBAL.EMPTY_STATE
 }
 
 export default (state = INITIAL_STATE, action) => {
+  console.log(action)
   const { type, payload } = action
   switch (type) {
+    case RENDER_CHAT_SUCCESS: {
+      return {
+        ...state,
+        messages: payload.messages,
+        dataSource: payload.dataSource
+      }
+    }
     case RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY:
       return {
         ...INITIAL_STATE,
@@ -46,7 +57,7 @@ export default (state = INITIAL_STATE, action) => {
       }
     case RENDER_CHAT_FAIL:
       return {
-        ...INITIAL_STATE,
+        ...state,
         chatErrorMsg: payload
       }
     case CHAT_INPUT_CHANGED:
@@ -68,8 +79,8 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         loading: false,
-        chatErrorMsg: EMPTY_STATE,
-        keyErrorMsg: EMPTY_STATE,
+        chatErrorMsg: GLOBAL.EMPTY_STATE,
+        keyErrorMsg: GLOBAL.EMPTY_STATE,
         publicKey: payload
       }
     case FIND_KEYS_FAIL:
@@ -82,8 +93,8 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         loading: false,
-        chatErrorMsg: EMPTY_STATE,
-        keyErrorMsg: EMPTY_STATE,
+        chatErrorMsg: GLOBAL.EMPTY_STATE,
+        keyErrorMsg: GLOBAL.EMPTY_STATE,
         publicKey: payload
       }
     case FIND_PUBLIC_KEY_FAIL:
@@ -95,7 +106,7 @@ export default (state = INITIAL_STATE, action) => {
     case MESSAGE_SENT_SUCCESSFUL:
       return {
         ...state,
-        input: EMPTY_STATE
+        input: GLOBAL.EMPTY_STATE
       }
     case MESSAGE_SENT_FAIL:
       return {

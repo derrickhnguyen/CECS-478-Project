@@ -4,6 +4,7 @@ import RSAKey from 'react-native-rsa'
 import RNFS from 'react-native-fs'
 import bcrypt from 'bcryptjs'
 import cryptojs from 'crypto-js'
+import * as GLOBAL from '../../global'
 import {
   AUTH_FIRST_NAME_CHANGED,
   AUTH_LAST_NAME_CHANGED,
@@ -87,7 +88,7 @@ export const loginUser = ({ email, password }) => {
     dispatch({ type: LOGIN_USER })
 
     // Make sure email and password exists.
-    if (email === EMPTY_STATE || password === EMPTY_STATE) {
+    if (email === GLOBAL.EMPTY_STATE || password === GLOBAL.EMPTY_STATE) {
       loginUserFail(dispatch, emailPasswordEmpty)
     } else {
       // Make HTTP POST request to receive salt and challenge
@@ -116,13 +117,13 @@ export const loginUser = ({ email, password }) => {
                   RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-private-key.txt`)
                     .then((privateKey) => {
                       // Save private key into local storage.
-                      storage.save({
-                        key: PRIVATE_KEY_STRING,
+                      GLOBAL.storage.save({
+                        key: GLOBAL.PRIVATE_KEY_STRING,
                         rawData: { privateKey },
                         expires: null
                       })
 
-                      res.data[PRIVATE_KEY_STRING] = privateKey
+                      res.data[GLOBAL.PRIVATE_KEY_STRING] = privateKey
 
                       // Send the appropriate response message 
                       // with the response data.
@@ -166,7 +167,7 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
     dispatch({ type: SIGNUP_USER })
 
     // Make sure there are no empty inputs.
-    if (firstname === EMPTY_STATE || lastname === EMPTY_STATE || email === EMPTY_STATE || password === EMPTY_STATE) {
+    if (firstname === GLOBAL.EMPTY_STATE || lastname === GLOBAL.EMPTY_STATE || email === GLOBAL.EMPTY_STATE || password === GLOBAL.EMPTY_STATE) {
       // Send the appropriate response if there are empty inputs.
       signupUserFail(dispatch, emptyInput)
     } else if (!email.includes('@')) {
@@ -197,13 +198,13 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
               RNFS.writeFile(privPath, privateKey, 'utf8')
                 .then((success) => {
                   // Save private key into local storage.
-                  storage.save({
-                    key: PRIVATE_KEY_STRING,
+                  GLOBAL.storage.save({
+                    key: GLOBAL.PRIVATE_KEY_STRING,
                     rawData: { privateKey },
                     expires: null
                   })
 
-                  res.data[PRIVATE_KEY_STRING] = privateKey
+                  res.data[GLOBAL.PRIVATE_KEY_STRING] = privateKey
 
                   // If private key was saved successfully, send the appropriate
                   // reponse to client.

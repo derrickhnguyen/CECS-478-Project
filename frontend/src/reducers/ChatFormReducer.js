@@ -1,3 +1,4 @@
+import * as GLOBAL from '../../global'
 import {
   CHAT_EMAIL_CHANGED,
   CREATE_CHAT,
@@ -6,9 +7,9 @@ import {
 } from '../actions/types'
 
 const INITIAL_STATE = {
-  email: EMPTY_STATE,
+  email: GLOBAL.EMPTY_STATE,
   loading: false,
-  chatFormError: EMPTY_STATE
+  chatFormError: GLOBAL.EMPTY_STATE
 }
 
 export default (state = INITIAL_STATE, action) => {
