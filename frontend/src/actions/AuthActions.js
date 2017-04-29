@@ -81,13 +81,13 @@ export const loginUser = ({ email, password }) => {
   // Extract error messages from object.
   const { emailPasswordEmpty, loginFailed } = errorMsgs
 
-  // Send an action type of LOGIN_USER to indicate
-  // that request is being processed.
   return (dispatch) => {
+    // Send an action type of LOGIN_USER to indicate
+    // that request is being processed.
     dispatch({ type: LOGIN_USER })
 
     // Make sure email and password exists.
-    if (email === '' || password === '') {
+    if (email === EMPTY_STATE || password === EMPTY_STATE) {
       loginUserFail(dispatch, emailPasswordEmpty)
     } else {
       // Make HTTP POST request to receive salt and challenge
@@ -166,7 +166,7 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
     dispatch({ type: SIGNUP_USER })
 
     // Make sure there are no empty inputs.
-    if (firstname === '' || lastname === '' || email === '' || password === '') {
+    if (firstname === EMPTY_STATE || lastname === EMPTY_STATE || email === EMPTY_STATE || password === EMPTY_STATE) {
       // Send the appropriate response if there are empty inputs.
       signupUserFail(dispatch, emptyInput)
     } else if (!email.includes('@')) {
@@ -293,7 +293,7 @@ const loginUserFail = (dispatch, errorMsg) => {
 /*
 * Helper function to dispatch SIGNUP_USER_SUCCESS
 * type. It will return the appropriate data to
-* popular the user's main screen.
+* populate the user's main screen.
 * 
 * @param    {function}    dispatch
 * @param    {object}      data
