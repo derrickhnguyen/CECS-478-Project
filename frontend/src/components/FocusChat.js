@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
-import { Text, View, ListView, StyleSheet } from 'react-native'
+import { Text, View, ListView, StyleSheet, TextInput } from 'react-native'
 import { connect } from 'react-redux'
+import KeyboardSpacer from 'react-native-keyboard-spacer'
 import { Input, Card, CardSection, Button, ErrorMessage } from './common'
 import { chatInputChanged, sendMessage } from '../actions'
 import MessageItem from './MessageItem'
@@ -100,13 +101,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   inputStyle: {
-    flex: 3
+    flex: 4,
   },
   inputInnerStyle: {
     width: 200
   },
   buttonStyle: {
-    flex: 1,
+    flex: 1
   }
 })
 

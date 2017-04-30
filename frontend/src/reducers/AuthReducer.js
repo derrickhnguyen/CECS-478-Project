@@ -23,6 +23,7 @@ const INITIAL_STATE = {
   token: GLOBAL.EMPTY_STATE,
   privateKey: GLOBAL.EMPTY_STATE,
   authError: GLOBAL.EMPTY_STATE,
+  hideBackImage: false,
   loading: false
 }
 
@@ -59,7 +60,8 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         loading: true,
-        authError: GLOBAL.EMPTY_STATE
+        authError: GLOBAL.EMPTY_STATE,
+        hideBackImage: true
       }
     case LOGIN_USER_SUCCESS:
       return {
@@ -85,7 +87,8 @@ export default (state = INITIAL_STATE, action) => {
         lastname: payload.lastname,
         token: payload.token,
         userId: payload.userId,
-        privateKey: payload.privateKey
+        privateKey: payload.privateKey,
+        hideBackImage: false
       }
     case SIGNUP_USER_FAIL:
       return {

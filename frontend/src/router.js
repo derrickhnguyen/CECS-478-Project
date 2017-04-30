@@ -35,7 +35,8 @@ class RouterComponent extends Component {
             key='signup'
             component={SignupForm}
             leftButtonIconStyle={iconStyle}
-            title='Sign Up' />
+            title='Sign Up'
+            hideBackImage={this.props.hideBackImage} />
         </Scene>
         <Scene key='main'>
           <Scene
@@ -91,6 +92,11 @@ const styles = {
   iconStyle: {
     tintColor: 'white'
   }
+}
+
+const mapStateToProps = ({ auth }) => {
+  const { hideBackImage } = auth
+  return { hideBackImage }
 }
 
 export default connect(null, { signupLeftClicked })(RouterComponent)

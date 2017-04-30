@@ -12,8 +12,8 @@ class ChatList extends Component {
   }
 
   onButtonPress(otherUserId, otherUserFirstname) {
-    const { token, privateKey } = this.props
-    this.props.focusChat({ otherUserId, token, otherUserFirstname, privateKey })
+    const { token, privateKey, userId } = this.props
+    this.props.focusChat({ otherUserId, userId, token, otherUserFirstname, privateKey })
   }
 
   render() {

@@ -223,7 +223,7 @@ export const renderList = ({ token, userId }) => {
 * 
 * @param {object} = { otherUserId:String, token:String, otherUserFirstname:String }
 */
-export const focusChat = ({ otherUserId, token, otherUserFirstname, privateKey }) => {
+export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, privateKey }) => {
   // Extract error messages from object.
   const { chatRenderFail } = errorMsgs
 
@@ -239,12 +239,12 @@ export const focusChat = ({ otherUserId, token, otherUserFirstname, privateKey }
     // Make a GET request to retrieve chat with current user.
     axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
       .then(result => {
-        GLOBAL.storage.getAllDataForKey(`${otherUserId}-messages`)
+        GLOBAL.storage.getAllDataForKey(`${otherUserId}:${userId}-messages`)
           .then(res => {
             let count = 0;
             msgs = result.data.map(msg => {
               if(msg.receiverID === otherUserId) {
-                return res[count++].message
+                return res[count++]
               } else {
                 return decryptor(JSON.parse(msg.message), privateKey)
               }
@@ -388,10 +388,10 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey, priv
       // Make a PUT request to add new message to chat.
       axiosInstance.put(`https://miningforgoldstein.me/chat`, { otherUserID: otherUserId, message: encryptedObject })
         .then(() => {
-          GLOBAL.storage.load({ key: `${otherUserId}-count` })
+          GLOBAL.storage.load({ key: `${otherUserId}:${userId}-count` })
             .then(({ count }) => {
               GLOBAL.storage.save({
-                key: `${otherUserId}-messages`,
+                key: `${otherUserId}:${userId}-messages`,
                 id: count++,
                 rawData: { 
                   message: input,
@@ -401,18 +401,18 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey, priv
               })
 
               GLOBAL.storage.save({
-                key: `${otherUserId}-count`,
+                key: `${otherUserId}:${userId}-count`,
                 rawData: { count: count++ }
               })          
             })
             .catch(() => {
               GLOBAL.storage.save({
-                key: `${otherUserId}-count`,
+                key: `${otherUserId}:${userId}-count`,
                 rawData: { count: 1002 }
               })
 
               GLOBAL.storage.save({
-                key: `${otherUserId}-messages`,
+                key: `${otherUserId}:${userId}-messages`,
                 id: 1001,
                 rawData: {
                   message: input,
@@ -426,12 +426,12 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey, priv
 
           axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
             .then((result) => {
-              GLOBAL.storage.getAllDataForKey(`${otherUserId}-messages`)
+              GLOBAL.storage.getAllDataForKey(`${otherUserId}:${userId}-messages`)
                 .then(res => {
                   let count = 0;
                   msgs = result.data.map(msg => {
                     if(msg.receiverID === otherUserId) {
-                      return res[count++].message
+                      return res[count++]
                     } else {
                       return decryptor(JSON.parse(msg.message), privateKey)
                     }
