@@ -223,7 +223,7 @@ export const renderList = ({ token, userId }) => {
 * 
 * @param {object} = { otherUserId:String, token:String, otherUserFirstname:String }
 */
-export const focusChat = ({ otherUserId, token, otherUserFirstname }) => {
+export const focusChat = ({ otherUserId, token, otherUserFirstname, privateKey }) => {
   // Extract error messages from object.
   const { chatRenderFail } = errorMsgs
 
@@ -234,42 +234,97 @@ export const focusChat = ({ otherUserId, token, otherUserFirstname }) => {
       headers: {'authorization': token}
     })
 
+    let msgs = GLOBAL.EMPTY_STATE
+
     // Make a GET request to retrieve chat with current user.
     axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
       .then(result => {
-        // If GET request is successful, find the other user's public
-        // key in local storage.
-        GLOBAL.storage.load({ key: otherUserId })
-          .then(({ publicKey }) => {
-            // If public key is in local storage, then dispatch
-            // a response to change states appropriately.
-            dispatch({
-              type: RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
-              payload: {
-                messages: result.data,
-                publicKey,
-                otherUserId,
-                otherUserFirstname
+        GLOBAL.storage.getAllDataForKey(`${otherUserId}-messages`)
+          .then(res => {
+            let count = 0;
+            msgs = result.data.map(msg => {
+              if(msg.receiverID === otherUserId) {
+                return res[count++].message
+              } else {
+                return decryptor(JSON.parse(msg.message), privateKey)
               }
             })
 
-            Actions.focusChat({title: otherUserFirstname})
+            // If GET request is successful, find the other user's public
+            // key in local storage.
+            GLOBAL.storage.load({ key: `${otherUserId}-${GLOBAL.PUBLIC_KEY_STRING}` })
+              .then(({ publicKey }) => {
+                // If public key is in local storage, then dispatch
+                // a response to change states appropriately.
+                dispatch({
+                  type: RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
+                  payload: {
+                    messages: msgs,
+                    publicKey,
+                    otherUserId,
+                    otherUserFirstname
+                  }
+                })
+
+                Actions.focusChat({title: otherUserFirstname})
+              })
+              .catch((err) => {
+
+                // If public key is not in local storage, then dispatch
+                // a response to change states appropriately, but without
+                // public key.
+                dispatch({
+                  type: RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
+                  payload: {
+                    messages: msgs,
+                    otherUserId,
+                    otherUserFirstname
+                  }
+                })
+
+                Actions.focusChat({title: otherUserFirstname})
+              })
           })
-          .catch((err) => {
-            // If public key is not in local storage, then dispatch
-            // a response to change states appropriately, but without
-            // public key.
-            dispatch({
-              type: RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
-              payload: {
-                messages: result.data,
-                otherUserId,
-                otherUserFirstname
-              }
+          .catch(() => {
+            msgs = result.data.map(msg => {
+              return decryptor(JSON.parse(msg.message), privateKey)
             })
 
-            Actions.focusChat({title: otherUserFirstname})
-          })
+            // If GET request is successful, find the other user's public
+            // key in local storage.
+            GLOBAL.storage.load({ key: `${otherUserId}-${GLOBAL.PUBLIC_KEY_STRING}` })
+              .then(({ publicKey }) => {
+                // If public key is in local storage, then dispatch
+                // a response to change states appropriately.
+                dispatch({
+                  type: RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
+                  payload: {
+                    messages: msgs,
+                    publicKey,
+                    otherUserId,
+                    otherUserFirstname
+                  }
+                })
+
+                Actions.focusChat({title: otherUserFirstname})
+              })
+              .catch((err) => {
+
+                // If public key is not in local storage, then dispatch
+                // a response to change states appropriately, but without
+                // public key.
+                dispatch({
+                  type: RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
+                  payload: {
+                    messages: msgs,
+                    otherUserId,
+                    otherUserFirstname
+                  }
+                })
+
+                Actions.focusChat({title: otherUserFirstname})
+              })
+          })   
       })
       .catch((err) => {
         // If GET request to retrieve current chat is unsuccessful,
@@ -303,9 +358,9 @@ export const chatInputChanged = (text) => {
 * 
 * @param {object} = { otherUserId:String, token:String, otherUserFirstname:String }
 */   
-export const sendMessage = ({ input, otherUserId, userId, token, publicKey }) => {
+export const sendMessage = ({ input, otherUserId, userId, token, publicKey, privateKey }) => {
   // Extract error messages from object.
-  const { emptyKeys, messageSendError, chatRenderFail } = errorMsgs
+  const { emptyKeys, messageSendError, chatRenderFail, emptyInput } = errorMsgs
 
   return ((dispatch) => {
     if(publicKey === GLOBAL.EMPTY_STATE) {
@@ -314,6 +369,11 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey }) =>
       dispatch({
         type: EMPTY_KEYS,
         payload: emptyKeys
+      })
+    } else if (input === '' ) {
+      dispatch({
+        type: MESSAGE_SENT_FAIL,
+        payload: emptyInput
       })
     } else {
       // Encrypt message
@@ -328,17 +388,80 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey }) =>
       // Make a PUT request to add new message to chat.
       axiosInstance.put(`https://miningforgoldstein.me/chat`, { otherUserID: otherUserId, message: encryptedObject })
         .then(() => {
+          GLOBAL.storage.load({ key: `${otherUserId}-count` })
+            .then(({ count }) => {
+              GLOBAL.storage.save({
+                key: `${otherUserId}-messages`,
+                id: count++,
+                rawData: { 
+                  message: input,
+                  date: Date.now()
+                },
+                expires: null
+              })
+
+              GLOBAL.storage.save({
+                key: `${otherUserId}-count`,
+                rawData: { count: count++ }
+              })          
+            })
+            .catch(() => {
+              GLOBAL.storage.save({
+                key: `${otherUserId}-count`,
+                rawData: { count: 1002 }
+              })
+
+              GLOBAL.storage.save({
+                key: `${otherUserId}-messages`,
+                id: 1001,
+                rawData: {
+                  message: input,
+                  date: Date.now()
+                },
+                expires: null
+              })
+            })
+
+          let msgs = GLOBAL.EMPTY_STATE
+
           axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
             .then((result) => {
-              dispatch({
-                type: RENDER_CHAT_SUCCESS,
-                payload: {
-                  messages: result.data,
-                  dataSource: new ListView.DataSource({
-                    rowHasChanged: (r1, r2) => r1 !== r2
-                  }).cloneWithRows(result.data)
-                }
-              })
+              GLOBAL.storage.getAllDataForKey(`${otherUserId}-messages`)
+                .then(res => {
+                  let count = 0;
+                  msgs = result.data.map(msg => {
+                    if(msg.receiverID === otherUserId) {
+                      return res[count++].message
+                    } else {
+                      return decryptor(JSON.parse(msg.message), privateKey)
+                    }
+                  })
+
+                  dispatch({
+                    type: RENDER_CHAT_SUCCESS,
+                    payload: {
+                      messages: msgs,
+                      dataSource: new ListView.DataSource({
+                        rowHasChanged: (r1, r2) => r1 !== r2
+                      }).cloneWithRows(msgs)
+                    }
+                  })
+                })
+                .catch(() => {
+                  msgs = result.data.map(msg => {
+                    return decryptor(JSON.parse(msg.message), privateKey)
+                  })
+
+                  dispatch({
+                    type: RENDER_CHAT_SUCCESS,
+                    payload: {
+                      messages: msgs,
+                      dataSource: new ListView.DataSource({
+                        rowHasChanged: (r1, r2) => r1 !== r2
+                      }).cloneWithRows(msgs)
+                    }
+                  })
+                })
             })
             .catch(() => {
               dispatch({
@@ -346,6 +469,7 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey }) =>
                 payload: chatRenderFail
               })
             })
+
           // If PUT request is successful, dispatch the appropriate response.
           dispatch({ type: MESSAGE_SENT_SUCCESSFUL })
         })
@@ -398,7 +522,7 @@ export const findPublicKey = ({ publicKeyFileName, otherUserId }) => {
         .then((publicKey) => {
           // If the file is found, save it in local storage.
           GLOBAL.storage.save({
-            key: otherUserId,
+            key: `${otherUserId}-${GLOBAL.PUBLIC_KEY_STRING}`,
             rawData: { publicKey },
             expires: null
           })
@@ -532,5 +656,6 @@ const errorMsgs = {
   emptyKeyInput: 'Please enter key file name',
   keyFindFail: 'Unable to retrieve key',
   emptyKeys: 'Please provide your key',
-  messageSendError: 'Unable to send message'
+  messageSendError: 'Unable to send message',
+  emptyInput: ''
 }

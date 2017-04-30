@@ -22,5 +22,6 @@ const storage = new Storage({
 module.exports = {
   storage: storage,
   PRIVATE_KEY_STRING: 'privateKey',
+  PUBLIC_KEY_STRING: 'publicKey',
   EMPTY_STATE: ''
 }

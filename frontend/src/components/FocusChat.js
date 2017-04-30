@@ -53,7 +53,8 @@ class FocusChat extends Component {
       otherUserId,
       userId,
       token,
-      publicKey
+      publicKey,
+      privateKey
     } = this.props
 
     this.props.sendMessage({
@@ -61,7 +62,8 @@ class FocusChat extends Component {
       otherUserId,
       userId,
       token,
-      publicKey
+      publicKey,
+      privateKey
     })
   }
 
@@ -70,7 +72,9 @@ class FocusChat extends Component {
     const { input, chatErrorMsg } = this.props
     return (
       <Card>
-        {this.renderListView()}
+        <CardSection style={{height: 450}}>
+          {this.renderListView()}
+        </CardSection>
         <ErrorMessage error={chatErrorMsg} />
         <CardSection style={inputContainerStyle}>
           <Input

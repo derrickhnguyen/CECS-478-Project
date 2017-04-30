@@ -12,8 +12,8 @@ class ChatList extends Component {
   }
 
   onButtonPress(otherUserId, otherUserFirstname) {
-    const { token } = this.props
-    this.props.focusChat({ otherUserId, token, otherUserFirstname })
+    const { token, privateKey } = this.props
+    this.props.focusChat({ otherUserId, token, otherUserFirstname, privateKey })
   }
 
   render() {
@@ -71,9 +71,9 @@ const styles = {
 }
 
 const mapStateToProps = ({ auth, chatList }) => {
-  const { token, userId } = auth
+  const { token, userId, privateKey } = auth
   const { listOfChats, loading, chatListError } = chatList
-  return { token, listOfChats, userId, loading }
+  return { token, listOfChats, userId, privateKey, loading }
 }
 
 export default connect(mapStateToProps, { renderList, focusChat })(ChatList)

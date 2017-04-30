@@ -114,7 +114,7 @@ export const loginUser = ({ email, password }) => {
                 .then((res) => {
                   const { firstname, lastname } = res.data
 
-                  RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-private-key.txt`)
+                  RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-${GLOBAL.PRIVATE_KEY_STRING}.txt`)
                     .then((privateKey) => {
                       // Save private key into local storage.
                       GLOBAL.storage.save({
@@ -185,14 +185,14 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
           const privateKey = rsa.getPrivateString()
 
           // Declare the path of where to store the public key.
-          const pubPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-publickey.txt`
+          const pubPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-${GLOBAL.PUBLIC_KEY_STRING}.txt`
 
           // Write the public key to declared file path.
           RNFS.writeFile(pubPath, publicKey, 'utf8')
             .then((success) => {
               // If public key was saved successfully, Declare the path of 
               // where to store the private key.
-              const privPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-private-key.txt`
+              const privPath = `${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-${GLOBAL.PRIVATE_KEY_STRING}.txt`
 
               // Write the private key to declared file path
               RNFS.writeFile(privPath, privateKey, 'utf8')
