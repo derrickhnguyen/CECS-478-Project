@@ -12,6 +12,8 @@ import {
   RENDER_LIST,
   RENDER_LIST_SUCCESS,
   RENDER_LIST_FAIL,
+  RENDER_CHAT,
+  RENDER_CHAT_DONE,
   RENDER_CHAT_SUCCESS,
   RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
   RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
@@ -228,6 +230,8 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
   const { chatRenderFail } = errorMsgs
 
   return (dispatch) => {
+    dispatch({ type: RENDER_CHAT })
+
     // To make an HTTP request, there must be a token
     // in the header.
     const axiosInstance = axios.create({
@@ -254,6 +258,8 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
             // key in local storage.
             GLOBAL.storage.load({ key: `${otherUserId}-${GLOBAL.PUBLIC_KEY_STRING}` })
               .then(({ publicKey }) => {
+                dispatch({ type: RENDER_CHAT_DONE })
+
                 // If public key is in local storage, then dispatch
                 // a response to change states appropriately.
                 dispatch({
@@ -269,6 +275,7 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
                 Actions.focusChat({title: otherUserFirstname})
               })
               .catch((err) => {
+                dispatch({ type: RENDER_CHAT_DONE })
 
                 // If public key is not in local storage, then dispatch
                 // a response to change states appropriately, but without
@@ -294,6 +301,8 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
             // key in local storage.
             GLOBAL.storage.load({ key: `${otherUserId}-${GLOBAL.PUBLIC_KEY_STRING}` })
               .then(({ publicKey }) => {
+                dispatch({ type: RENDER_CHAT_DONE })
+
                 // If public key is in local storage, then dispatch
                 // a response to change states appropriately.
                 dispatch({
@@ -309,6 +318,7 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
                 Actions.focusChat({title: otherUserFirstname})
               })
               .catch((err) => {
+                dispatch({ type: RENDER_CHAT_DONE })
 
                 // If public key is not in local storage, then dispatch
                 // a response to change states appropriately, but without
@@ -334,8 +344,7 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
           payload: chatRenderFail
         })
 
-        // Switch screen to focus chat screen.
-        Actions.focusChat()
+        Actions.focusChat({title: otherUserFirstname})
       })
   }
 }
@@ -358,7 +367,7 @@ export const chatInputChanged = (text) => {
 * 
 * @param {object} = { otherUserId:String, token:String, otherUserFirstname:String }
 */   
-export const sendMessage = ({ input, otherUserId, userId, token, publicKey, privateKey }) => {
+export const sendMessage = ({ input, otherUserId, userId, token, publicKey, privateKey, messages }) => {
   // Extract error messages from object.
   const { emptyKeys, messageSendError, chatRenderFail, emptyInput } = errorMsgs
 
@@ -376,6 +385,26 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey, priv
         payload: emptyInput
       })
     } else {
+      const newMessage = {
+        message: input,
+        date: Date.now()
+      }
+
+      messages.push(newMessage)
+
+      // If PUT request is successful, dispatch the appropriate response.
+      dispatch({ type: MESSAGE_SENT_SUCCESSFUL })
+
+      dispatch({
+        type: RENDER_CHAT_SUCCESS,
+        payload: {
+          messages: messages,
+          dataSource: new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2
+          }).cloneWithRows(messages)
+        }
+      })
+
       // Encrypt message
       const encryptedObject = encryptor(input, publicKey)
 
@@ -421,57 +450,6 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey, priv
                 expires: null
               })
             })
-
-          let msgs = GLOBAL.EMPTY_STATE
-
-          axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
-            .then((result) => {
-              GLOBAL.storage.getAllDataForKey(`${otherUserId}:${userId}-messages`)
-                .then(res => {
-                  let count = 0;
-                  msgs = result.data.map(msg => {
-                    if(msg.receiverID === otherUserId) {
-                      return res[count++]
-                    } else {
-                      return decryptor(JSON.parse(msg.message), privateKey)
-                    }
-                  })
-
-                  dispatch({
-                    type: RENDER_CHAT_SUCCESS,
-                    payload: {
-                      messages: msgs,
-                      dataSource: new ListView.DataSource({
-                        rowHasChanged: (r1, r2) => r1 !== r2
-                      }).cloneWithRows(msgs)
-                    }
-                  })
-                })
-                .catch(() => {
-                  msgs = result.data.map(msg => {
-                    return decryptor(JSON.parse(msg.message), privateKey)
-                  })
-
-                  dispatch({
-                    type: RENDER_CHAT_SUCCESS,
-                    payload: {
-                      messages: msgs,
-                      dataSource: new ListView.DataSource({
-                        rowHasChanged: (r1, r2) => r1 !== r2
-                      }).cloneWithRows(msgs)
-                    }
-                  })
-                })
-            })
-            .catch(() => {
-              dispatch({
-                type: RENDER_CHAT_FAIL,
-                payload: chatRenderFail
-              })
-            })
-
-          // If PUT request is successful, dispatch the appropriate response.
-          dispatch({ type: MESSAGE_SENT_SUCCESSFUL })
         })
         .catch(() => {
           // If PUT request is unsuccessful, dispatch the

@@ -2,7 +2,9 @@ import * as GLOBAL from '../../global'
 import {
   RENDER_LIST,
   RENDER_LIST_SUCCESS,
-  RENDER_LIST_FAIL
+  RENDER_LIST_FAIL,
+  RENDER_CHAT,
+  RENDER_CHAT_DONE
 } from '../actions/types'
 
 const INITIAL_STATE = {
@@ -28,6 +30,16 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...INITIAL_STATE,
         chatListError: payload
+      }
+    case RENDER_CHAT:
+      return {
+        ...state,
+        loading: true
+      }
+    case RENDER_CHAT_DONE:
+      return {
+        ...state,
+        loading: false
       }
     default:
       return state

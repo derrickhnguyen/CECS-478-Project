@@ -159,12 +159,15 @@ export const loginUser = ({ email, password }) => {
 */
 export const signupUser = ({ firstname, lastname, email, password }) => {
   // Extract error messages from the object, errorMsgs.
-  const { emptyInput, signupFailed, invalidEmail, keyGenerationFail } = errorMsgs
+  const { emptyInput, signupFailed, invalidEmail, keyGenerationFail, signupWait } = errorMsgs
 
   return (dispatch) => {
     // Indicated to the user that there is an attempt
     // to sign them up.
-    dispatch({ type: SIGNUP_USER })
+    dispatch({
+      type: SIGNUP_USER,
+      payload: signupWait
+    })
 
     // Make sure there are no empty inputs.
     if (firstname === GLOBAL.EMPTY_STATE || lastname === GLOBAL.EMPTY_STATE || email === GLOBAL.EMPTY_STATE || password === GLOBAL.EMPTY_STATE) {
@@ -338,5 +341,6 @@ const errorMsgs = {
   emptyInput: 'Please fill out every input',
   signupFailed: 'Signup failed',
   invalidEmail: 'Please enter a valid email',
-  keyGenerationFail: 'Key pair generation failed'
+  keyGenerationFail: 'Key pair generation failed',
+  signupWait: 'Signing up! Please be patient!'
 }

@@ -37,7 +37,8 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         messages: payload.messages,
-        dataSource: payload.dataSource
+        dataSource: payload.dataSource,
+        loading: false
       }
     }
     case RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY:
@@ -47,18 +48,21 @@ export default (state = INITIAL_STATE, action) => {
         otherUserId: payload.otherUserId,
         otherUserFirstname: payload.otherUserFirstname,
         publicKey: payload.publicKey,
+        loading: false
       }
     case RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY:
       return {
         ...INITIAL_STATE,
         messages: payload.messages,
         otherUserId: payload.otherUserId,
-        otherUserFirstname: payload.otherUserFirstname
+        otherUserFirstname: payload.otherUserFirstname,
+        loading: false
       }
     case RENDER_CHAT_FAIL:
       return {
         ...state,
-        chatErrorMsg: payload
+        chatErrorMsg: payload,
+        loading: false
       }
     case CHAT_INPUT_CHANGED:
       return {

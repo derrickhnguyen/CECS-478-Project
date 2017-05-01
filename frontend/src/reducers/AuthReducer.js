@@ -56,13 +56,6 @@ export default (state = INITIAL_STATE, action) => {
         loading: true,
         authError: GLOBAL.EMPTY_STATE
       }
-    case SIGNUP_USER:
-      return {
-        ...state,
-        loading: true,
-        authError: GLOBAL.EMPTY_STATE,
-        hideBackImage: true
-      }
     case LOGIN_USER_SUCCESS:
       return {
         ...INITIAL_STATE,
@@ -80,6 +73,13 @@ export default (state = INITIAL_STATE, action) => {
         password: GLOBAL.EMPTY_STATE,
         loading: false
       }
+    case SIGNUP_USER:
+      return {
+        ...state,
+        loading: true,
+        authError: payload,
+        hideBackImage: true
+      }
     case SIGNUP_USER_SUCCESS:
       return {
         ...INITIAL_STATE,
@@ -88,7 +88,8 @@ export default (state = INITIAL_STATE, action) => {
         token: payload.token,
         userId: payload.userId,
         privateKey: payload.privateKey,
-        hideBackImage: false
+        hideBackImage: false,
+        authError: GLOBAL.EMPTY_STATE
       }
     case SIGNUP_USER_FAIL:
       return {

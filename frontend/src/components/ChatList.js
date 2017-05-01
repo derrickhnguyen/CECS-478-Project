@@ -70,7 +70,7 @@ const styles = {
   }
 }
 
-const mapStateToProps = ({ auth, chatList }) => {
+const mapStateToProps = ({ auth, chatList, focusChat }) => {
   const { token, userId, privateKey } = auth
   const { listOfChats, loading, chatListError } = chatList
   return { token, listOfChats, userId, privateKey, loading }

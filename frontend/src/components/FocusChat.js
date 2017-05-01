@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Text, View, ListView, StyleSheet, TextInput } from 'react-native'
 import { connect } from 'react-redux'
 import KeyboardSpacer from 'react-native-keyboard-spacer'
-import { Input, Card, CardSection, Button, ErrorMessage } from './common'
+import { Input, Card, CardSection, Button, ErrorMessage, Spinner } from './common'
 import { chatInputChanged, sendMessage } from '../actions'
 import MessageItem from './MessageItem'
 import * as GLOBAL from '../../global'
@@ -23,9 +23,11 @@ class FocusChat extends Component {
   }
 
   renderListView() {
-    const { privateKey, publicKey, messages, otherUserFirstname, dataSource } = this.props
+    const { privateKey, publicKey, messages, otherUserFirstname, dataSource, loading } = this.props
     
-    if (publicKey === GLOBAL.EMPTY_STATE || privateKey === GLOBAL.EMPTY_STATE) {
+    if (loading) {
+      <Spinner size='large' />
+    } else if (publicKey === GLOBAL.EMPTY_STATE || privateKey === GLOBAL.EMPTY_STATE) {
       return (
         <ErrorMessage error={`Please, provide your private key and/or ${otherUserFirstname}'s public key`} />
       )
@@ -55,7 +57,8 @@ class FocusChat extends Component {
       userId,
       token,
       publicKey,
-      privateKey
+      privateKey,
+      messages
     } = this.props
 
     this.props.sendMessage({
@@ -64,7 +67,8 @@ class FocusChat extends Component {
       userId,
       token,
       publicKey,
-      privateKey
+      privateKey,
+      messages
     })
   }
 
