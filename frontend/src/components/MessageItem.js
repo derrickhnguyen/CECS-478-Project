@@ -3,8 +3,15 @@ import { Text, StyleSheet } from 'react-native'
 import { CardSection } from './common'
 import * as GLOBAL from '../../global'
 
+/*
+* Component that displays Message Item.
+*/
 class MessageItem extends Component {
+  // Main function to render Message Item.
   render() {
+    // If message has a key called, date, then it is
+    // from the client, therefore will be aligned to
+    // the right.
     if (this.props.message.date) {
       return (
         <CardSection style={styles.rightAlignStyle}>
@@ -12,6 +19,7 @@ class MessageItem extends Component {
         </CardSection>
       )
     } else {
+      // Message is from the user, align to the left.
       return (
         <CardSection style={styles.leftAlignStyle}>
           <Text style={styles.fontStyle}>{this.props.message}</Text>
@@ -21,6 +29,7 @@ class MessageItem extends Component {
   }
 }
 
+// Styles property.
 const styles = StyleSheet.create({
   leftAlignStyle: {
     width: 200,
@@ -41,4 +50,5 @@ const styles = StyleSheet.create({
   }
 })
 
+// Export MessageItem.js to be used for application.
 export default MessageItem

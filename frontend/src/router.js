@@ -1,21 +1,42 @@
 import React, { Component } from 'react'
 import { Scene, Router, Actions } from 'react-native-router-flux'
 import { connect } from 'react-redux'
+import TimerMixin from 'react-timer-mixin'
 import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 import ChatList from './components/ChatList'
 import ChatCreate from './components/ChatCreate'
 import FocusChat from './components/FocusChat'
 import KeyForm from './components/KeyForm'
-import { signupLeftClicked } from './actions'
+import { signupLeftClicked, removeFocusChatIntervalId } from './actions'
 
 class RouterComponent extends Component {
-  onBackButtonClick() {
+  // Declare variables for every function in this class
+  // to use.
+  constructor(props) {
+    super(props)
+    this.mixins = [TimerMixin]
+  }
+
+  // When Signup back button is clicked, the function
+  // will be called, then pop out of the page.
+  onSignupBackButtonClick() {
     this.props.signupLeftClicked()
     Actions.pop()
   }
 
+  // When Focus chat back button is clicked, the function
+  // will be called, then pop out of the page.
+  onFocusChatBackButtonClick() {
+    const { focusChatIntervalId } = this.props
+    clearInterval(focusChatIntervalId)
+    this.props.removeFocusChatIntervalId({ focusChatIntervalId })
+    Actions.pop()
+  }
+
+  // Main function to render all the routers.
   render() {
+    // Extract object within the styles object.
     const { backgroundStyle, textStyle, iconStyle } = styles
 
     return (
@@ -26,12 +47,12 @@ class RouterComponent extends Component {
             titleStyle={textStyle}
             key='login'
             component={LoginForm}
-            leftButtonIconStyle={{tintColor:'white'}}
+            leftButtonIconStyle={iconStyle}
             title='M4G' />
           <Scene
             navigationBarStyle={backgroundStyle}
             titleStyle={textStyle} 
-            onBack={this.onBackButtonClick.bind(this)}
+            onBack={this.onSignupBackButtonClick.bind(this)}
             key='signup'
             component={SignupForm}
             leftButtonIconStyle={iconStyle}
@@ -66,6 +87,7 @@ class RouterComponent extends Component {
             rightButtonTextStyle={textStyle}
             key='focusChat'
             component={FocusChat}
+            onBack={this.onFocusChatBackButtonClick.bind(this)}
             leftButtonIconStyle={iconStyle}
           />
           <Scene
@@ -82,6 +104,7 @@ class RouterComponent extends Component {
   }
 }
 
+// Styles property.
 const styles = {
   backgroundStyle: {
     backgroundColor: '#778899'
@@ -94,9 +117,19 @@ const styles = {
   }
 }
 
-const mapStateToProps = ({ auth }) => {
+// Extract states from auth and focusChat reducer,
+// and use it for this page.
+const mapStateToProps = ({ auth, focusChat }) => {
   const { hideBackImage } = auth
-  return { hideBackImage }
+  const { focusChatIntervalId } = focusChat
+  return { hideBackImage, focusChatIntervalId }
 }
 
-export default connect(null, { signupLeftClicked })(RouterComponent)
+// Connects this page with redux so states can be
+// used from auth and focusChat.
+//
+// Exports router.js to be used for application.
+export default connect(mapStateToProps, {
+  signupLeftClicked,
+  removeFocusChatIntervalId
+})(RouterComponent)

@@ -73,8 +73,10 @@ export const authPasswordChanged = (text) => {
 }
 
 /*
+* REMOTE LOGIN IMPLEMENTATION.
+*
 * Checks to see if user can be authenticated with the provided
-* parameters by implementing 'REMOTE LOGIN'.
+* parameters by implementing.
 * 
 * @param   {object}   = { email:String, password:String }
 */
@@ -89,9 +91,10 @@ export const loginUser = ({ email, password }) => {
 
     // Make sure email and password exists.
     if (email === GLOBAL.EMPTY_STATE || password === GLOBAL.EMPTY_STATE) {
+      // Send the appropriate response if there is no email/password.
       loginUserFail(dispatch, emailPasswordEmpty)
     } else {
-      // Make HTTP POST request to receive salt and challenge
+      // Make HTTP POST request to receive salt and challenge.
       axios.post('https://miningforgoldstein.me/requestSaltAndChallenge', { email })
         .then((res) =>{
           // If POST request is successful, extract salt and 
@@ -101,7 +104,7 @@ export const loginUser = ({ email, password }) => {
           // Hash the password with the given salt.
           bcrypt.hash(password, salt, (err, hash) => {
             if (err) {
-              // If there is an error, respond with a client error.
+              // If there is an error, respond appropriately.
               loginUserFail(dispatch, loginFailed)
             } else {
               // With the given hash password, create a tag with the hashed password
@@ -109,20 +112,24 @@ export const loginUser = ({ email, password }) => {
               const key = hash
               const tag = cryptojs.HmacSHA256(challenge, key).toString()
               
-              //Make HTTP Post to request for token.
+              // Make HTTP Post to request for token with the created tag.
               axios.post('https://miningforgoldstein.me/validateTag', { email, challenge, tag })
                 .then((res) => {
+                  // If request is successful, extract firstname and lastname from 
+                  // the response.
                   const { firstname, lastname } = res.data
 
+                  // Read private-key from user's mobile device.
                   RNFS.readFile(`${RNFS.ExternalDirectoryPath}/${firstname}${lastname}-${GLOBAL.PRIVATE_KEY_STRING}.txt`)
                     .then((privateKey) => {
-                      // Save private key into local storage.
+                      // If reading file is successful, save private key into local storage.
                       GLOBAL.storage.save({
                         key: GLOBAL.PRIVATE_KEY_STRING,
                         rawData: { privateKey },
                         expires: null
                       })
 
+                      // Grab the private key and add it to the response.
                       res.data[GLOBAL.PRIVATE_KEY_STRING] = privateKey
 
                       // Send the appropriate response message 
@@ -174,7 +181,7 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
       // Send the appropriate response if there are empty inputs.
       signupUserFail(dispatch, emptyInput)
     } else if (!email.includes('@')) {
-      // Send the appropriate response if the user does not has a '@' sign
+      // Send the appropriate response if the user does not has an '@' sign
       // in the email input.
       signupUserFail(dispatch, invalidEmail)
     } else {
@@ -184,7 +191,11 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
           // If the POST request is successful, generate a new RSA key pair.
           const rsa = new RSAKey()
           rsa.generate(2048, '10001')
+          
+          // Generated public key.
           const publicKey = rsa.getPublicString()
+
+          // Generated private key.
           const privateKey = rsa.getPrivateString()
 
           // Declare the path of where to store the public key.
@@ -207,6 +218,7 @@ export const signupUser = ({ firstname, lastname, email, password }) => {
                     expires: null
                   })
 
+                  // Grab the private key and add it to the response.
                   res.data[GLOBAL.PRIVATE_KEY_STRING] = privateKey
 
                   // If private key was saved successfully, send the appropriate

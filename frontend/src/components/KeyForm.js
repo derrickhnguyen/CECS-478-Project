@@ -4,16 +4,27 @@ import { connect } from 'react-redux'
 import { Card, CardSection, Input, Spinner, Button, ErrorMessage } from './common'
 import { findPublicKey, publicKeyFileNameChanged } from '../actions'
 
+/*
+* Component that displays the Key Form Page.
+*/
 class KeyForm extends Component {
+  // Whenever public key input changes, this function
+  // will be called to change the public key input state.
+  // ../actions/ChatActions/publicKeyFileNameChaged
   onPublicKeyFileNameChange(text) {
     this.props.publicKeyFileNameChanged(text)
   }
 
+  // Whenever the button is pressed, this function
+  // will be called to invoke the findPublicKey function.
+  // ../actions/ChatActions/findPublicKey
   onButtonPress() {
-    const { publicKeyFileName, otherUserId } = this.props
-    this.props.findPublicKey({ publicKeyFileName, otherUserId })
+    const { userId, publicKeyFileName, otherUserId } = this.props
+    this.props.findPublicKey({ userId, publicKeyFileName, otherUserId })
   }
 
+  // Helper function that displays either a spinner
+  // or the button.
   renderButton() {
     if (this.props.loading) {
       return <Spinner size='large' />
@@ -26,7 +37,9 @@ class KeyForm extends Component {
     }
   }
 
+  // Main function to render Key Form page.
   render() {
+    // Extract object within the styles object.
     const { textStyle } = styles
 
     return (
@@ -50,6 +63,7 @@ class KeyForm extends Component {
   }
 }
 
+// Styles property.
 const styles = {
   textStyle: {
     fontSize: 18,
@@ -57,7 +71,11 @@ const styles = {
   }
 }
 
-const mapStateToProps = ({ focusChat }) => {
+// Extract states from auth and focusChat reducer,
+// and use it for this page.
+const mapStateToProps = ({ auth, focusChat }) => {
+  const { userId } = auth
+
   const {
     publicKeyFileName,
     loading,
@@ -66,6 +84,7 @@ const mapStateToProps = ({ focusChat }) => {
   } = focusChat
 
   return {
+    userId,
     publicKeyFileName,
     loading,
     keyErrorMsg,
@@ -73,6 +92,10 @@ const mapStateToProps = ({ focusChat }) => {
   }
 }
 
+// Connects this page with redux so states can be
+// used from auth and focusChat.
+//
+// Exports KeyForm.js to be used for application.
 export default connect(mapStateToProps, {
   publicKeyFileNameChanged,
   findPublicKey

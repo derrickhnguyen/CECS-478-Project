@@ -1,8 +1,13 @@
-// Import libraries for making a component
 import React from 'react'
 import { Text, View, StyleSheet } from 'react-native'
 
-// Make a component
+/* * * * * * * * * * * * * * * * * * * * * * * */
+/*  This is a style container used to created  */
+/*  many components for this application. Not  */
+/*  much can be said about these components    */
+/*  other than that.                           */
+/* * * * * * * * * * * * * * * * * * * * * * * */
+
 const Header = (props) => {
   const { textStyle, viewStyle } = styles
 

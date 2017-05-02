@@ -1,13 +1,26 @@
 import React, { Component } from 'react'
 import { Text, View, ListView, StyleSheet, TextInput } from 'react-native'
+import TimerMixin from 'react-timer-mixin'
 import { connect } from 'react-redux'
 import KeyboardSpacer from 'react-native-keyboard-spacer'
-import { Input, Card, CardSection, Button, ErrorMessage, Spinner } from './common'
-import { chatInputChanged, sendMessage } from '../actions'
+import { Input, Card, CardSection, Button, ErrorMessage } from './common'
+import { chatInputChanged, sendMessage, checkAndUpdateMessages, setFocusChatIntervalId } from '../actions'
 import MessageItem from './MessageItem'
 import * as GLOBAL from '../../global'
 
+/*
+* Component that displays the Focus Chat Page.
+*/
 class FocusChat extends Component {
+  // Declare variables for every function in this class
+  // to use.
+  constructor(props) {
+    super(props)
+    this.mixins = [TimerMixin]
+  }
+
+  // Before component renders:
+  // set the data source for the list view.
   componentWillMount() {
     const ds = new ListView.DataSource({
       rowHasChanged: (r1, r2) => r1 !== r2
@@ -16,40 +29,66 @@ class FocusChat extends Component {
     this.dataSource = ds.cloneWithRows(this.props.messages)
   }
 
+  // After component renders:
+  // create an interval function that will constantly check
+  // any new messages.
+  componentDidMount() {
+    const { token, otherUserId, userId, privateKey } = this.props
+    let focusChatIntervalId = setInterval(() => {
+      this.props.checkAndUpdateMessages({ token, otherUserId, userId, privateKey })
+    }, 5000) 
+
+    this.props.setFocusChatIntervalId({ focusChatIntervalId })
+  }
+
+  // Helper function for List View to display
+  // Message Item.
   renderRow(message) {
     return (
       <MessageItem message={message} />
     )
   }
 
+  // Helper function that displays error message, notification message,
+  // or the list view depending on conditions.
   renderListView() {
-    const { privateKey, publicKey, messages, otherUserFirstname, dataSource, loading } = this.props
+    // Extract states from props object.
+    const { privateKey, publicKey, messages, otherUserFirstname, dataSource } = this.props
     
-    if (loading) {
-      <Spinner size='large' />
-    } else if (publicKey === GLOBAL.EMPTY_STATE || privateKey === GLOBAL.EMPTY_STATE) {
+    // Make sure that public key and private key are provided
+    if (publicKey === GLOBAL.EMPTY_STATE || privateKey === GLOBAL.EMPTY_STATE) {
       return (
-        <ErrorMessage error={`Please, provide your private key and/or ${otherUserFirstname}'s public key`} />
+        <ErrorMessage style={{height: 450}} error={`Please provide ${otherUserFirstname}'s public key`} />
       )
     } else if (messages.length === 0) {
+      // Return notification message if there are no messages.
       return (
-        <ErrorMessage error={`There are currently no messages. To start, type anything down below and press 'Send'!`} />
+        <ErrorMessage style={{height: 450}} error={`There are currently no messages. To start, type anything down below and press 'Send'!`} />
       )
     } else {
+      // Displays List View.
       return (
-        <ListView
-          dataSource={dataSource || this.dataSource}
-          renderRow={this.renderRow}
-          enableEmptySections
-        />  
+        <CardSection style={{height: 450}}>
+          <ListView
+            dataSource={dataSource || this.dataSource}
+            renderRow={this.renderRow}
+            enableEmptySections
+          />  
+        </CardSection>
       )
     }
   }
 
+  // Whenever input changes, this function
+  // will be called to change the message
+  // input state.
   onInputChange(text) {
     this.props.chatInputChanged(text)
   }
 
+  // Whenever the button is pressed, this function
+  // will be called to invoke the sendMessage function.
+  // ../actions/ChatActions/sendMessage
   onButtonPress() {
     const {
       input,
@@ -72,14 +111,17 @@ class FocusChat extends Component {
     })
   }
 
+  // Main function to render Focus Chat page.
   render() {
+    // Extract object within the styles object.
     const { inputContainerStyle, inputStyle, inputInnerStyle, buttonStyle } = styles
+
+    // Extract states from props object.
     const { input, chatErrorMsg } = this.props
+
     return (
       <Card>
-        <CardSection style={{height: 450}}>
-          {this.renderListView()}
-        </CardSection>
+        {this.renderListView()}
         <ErrorMessage error={chatErrorMsg} />
         <CardSection style={inputContainerStyle}>
           <Input
@@ -100,6 +142,7 @@ class FocusChat extends Component {
   }
 }
 
+// Styles property.
 const styles = StyleSheet.create({
   inputContainerStyle: {
     flexDirection: 'row'
@@ -115,6 +158,8 @@ const styles = StyleSheet.create({
   }
 })
 
+// Extract states from auth and focusChat reducer,
+// and use it for this page.
 const mapStateToProps = ({ focusChat, auth }) => {
   const {
     messages,
@@ -146,7 +191,13 @@ const mapStateToProps = ({ focusChat, auth }) => {
   }
 }
 
+// Connects this page with redux so states can be
+// used from auth and focusChat.
+//
+// Exports ChatList.js to be used for application.
 export default connect(mapStateToProps, {
   chatInputChanged,
-  sendMessage
+  sendMessage,
+  checkAndUpdateMessages,
+  setFocusChatIntervalId
 })(FocusChat)

@@ -4,16 +4,33 @@ import { connect } from 'react-redux'
 import { Card, CardSection, Input, Button, ErrorMessage, Spinner } from './common'
 import { chatEmailChanged, createChat } from '../actions'
 
+/*
+* Component that displays the Chat Creation Page.
+*/
 class ChatCreate extends Component {
+  // Whenever input value changes, this function will 
+  // be called to change the value of the input state.
+  //
+  // ../actions/ChatActions/chatEmailChanged
   onEmailChange(text) {
     this.props.chatEmailChanged(text)
   }
 
+  // Whenever the button is clicked, this function will
+  // be called to handle the request to make sure if 
+  // chat can be created or not.
+  //
+  // ../actions/ChatActions/createChat
   onButtonPress() {
     const { email, token, userId } = this.props
     this.props.createChat({ email, token, userId })
   }
 
+  // If the state, loading, is set to true; display
+  // a spinner to indicate request is being processed.
+  //
+  // If the state, loading, is set to false; display
+  // the button.
   renderButton() {
     if (this.props.loading) {
       return <Spinner size='large' />
@@ -26,7 +43,9 @@ class ChatCreate extends Component {
     }
   }
 
+  // Main function to render Chat Creation page.
   render() {
+    // Extract object within the styles object.
     const { textStyle } = styles
 
     return (
@@ -50,6 +69,7 @@ class ChatCreate extends Component {
   }
 }
 
+// Styles property.
 const styles = {
   textStyle: {
     fontSize: 18,
@@ -57,6 +77,8 @@ const styles = {
   }
 }
 
+// Extract states from auth and chatForm reducer,
+// and use it for this page.
 const mapStateToProps = ({ auth, chatForm }) => {
   const { token, userId } = auth
   const { email, chatFormError, loading } = chatForm
@@ -69,6 +91,10 @@ const mapStateToProps = ({ auth, chatForm }) => {
   }
 }
 
+// Connects this page with redux so states can be
+// used from auth and chatForm.
+//
+// Exports ChatCreate.js to be used for application.
 export default connect(mapStateToProps, {
   chatEmailChanged,
   createChat

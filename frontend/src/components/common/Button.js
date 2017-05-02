@@ -1,6 +1,13 @@
 import React from 'react'
 import { Text, TouchableOpacity, StyleSheet } from 'react-native'
 
+/* * * * * * * * * * * * * * * * * * * * * * * */
+/*  This is a style container used to created  */
+/*  many components for this application. Not  */
+/*  much can be said about these components    */
+/*  other than that.                           */
+/* * * * * * * * * * * * * * * * * * * * * * * */
+
 const Button = ({ onPress, children, style }) => {
   const { buttonStyle, textStyle } = styles
 

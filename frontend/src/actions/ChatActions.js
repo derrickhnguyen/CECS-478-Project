@@ -9,7 +9,6 @@ import {
   CREATE_CHAT,
   CREATE_CHAT_FAIL,
   CREATE_CHAT_SUCCESS,
-  RENDER_LIST,
   RENDER_LIST_SUCCESS,
   RENDER_LIST_FAIL,
   RENDER_CHAT,
@@ -18,17 +17,19 @@ import {
   RENDER_CHAT_SUCCESS_WITH_PUBLIC_KEY,
   RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
   RENDER_CHAT_FAIL,
+  UPDATE_CHAT,
   CHAT_INPUT_CHANGED,
   PRIVATE_KEY_FILE_NAME_CHANGED,
   PUBLIC_KEY_FILE_NAME_CHANGED,
-  FIND_KEYS,
-  FIND_KEYS_SUCCESS,
-  FIND_KEYS_FAIL,
+  FIND_PUBLIC_KEY,
   FIND_PUBLIC_KEY_SUCCESS,
   FIND_PUBLIC_KEY_FAIL,
   MESSAGE_SENT_SUCCESSFUL,
   MESSAGE_SENT_FAIL,
-  EMPTY_KEYS
+  SET_FOCUS_CHAT_INTERVAL_ID,
+  REMOVE_FOCUS_CHAT_INTERVAL_ID,
+  SET_CHAT_LIST_INTERVAL_ID,
+  REMOVE_CHAT_LIST_INTERVAL_ID
 } from './types'
 
 /*
@@ -60,9 +61,9 @@ export const createChat = ({ email, token, userId }) => {
     // that request is being processed.
     dispatch({ type: CREATE_CHAT })
 
-    // Make sure user inputs anything.
+    // Make sure user does not have empty inputs.
     if(email === GLOBAL.EMPTY_STATE) {
-      // Repond with the appropriate reponse
+      // Respond with the appropriate response
       // if users does not input anything.
       createChatFail(dispatch, emptyEmail)
     } else {
@@ -72,37 +73,39 @@ export const createChat = ({ email, token, userId }) => {
         headers: {'authorization': token}
       })
 
-      // Make a GET request to retrieve the other user's ID.
+      // Make a GET request to retrieve the ID of the user that the client would like
+      // to communicate with.
       axiosInstance.get(`https://miningforgoldstein.me/userIdByEmail?email=${email}`)
         .then(res => {
-          // If request was successful...
+          // If request was successful, extract the user's ID.
           const otherUserID = res.data
 
           // Make a POST request to generate a new chat with the user.
           axiosInstance.post('https://miningforgoldstein.me/chat', { otherUserID })
             .then(() => {
               // If POST request was successful, repopulate the chat list by
-              // calling a GET request to to retrieve all of the active chats.
+              // calling a GET request to retrieve all of the active chats.
               axiosInstance.get('https://miningforgoldstein.me/allChat')
                 .then(({ data }) => {
-                  // If the data array is empty, return.
+                  // If the data array is empty, simply return.
                   if (data.length === 0) {
                     renderListSuccess(dispatch, data)
                   } else {
                     // If the data array is not empty, retrive all of the IDs
-                    // that is not the user and create an array out of it.
+                    // that is not the client and create an array out of it.
                     const otherUserIds = data.map(chat => {
                       return chat.users.find(id => {
                         return id !== userId
                       })
                     })
 
+                    // Use this variable as a counter.
                     let itemsProcessed = 0
 
-                    // Do a for-loop for each other users ID.
+                    // Do a for-loop for each users ID.
                     otherUserIds.forEach((id, index) => {
-                      // Make a GET request for each other users ID, and add their firstname,
-                      // lastname, and id into each entry of the users entry.
+                      // Make a GET request for each users ID, add their firstname,
+                      // lastname, and id into each entry of the response.
                       axiosInstance.get(`https://miningforgoldstein.me/userNameById?id=${id}`)
                         .then(result => {
                           itemsProcessed++
@@ -111,7 +114,8 @@ export const createChat = ({ email, token, userId }) => {
                           data[index]['otherUserId'] = id
 
                           // Once all of the entries have been entered, return
-                          // the appropriate response.
+                          // the appropriate response, send the appropriate
+                          // success response.
                           if (itemsProcessed === otherUserIds.length) {
                             renderListSuccess(dispatch, data)
                             Actions.pop()
@@ -160,21 +164,17 @@ export const renderList = ({ token, userId }) => {
   const { listRenderFail } = errorMsgs
 
   return (dispatch) => {
-    // Send an action type of RENDER_LIST to indicate
-    // that request is being processed.
-    dispatch({ type: RENDER_LIST })
-
     // To make an HTTP request, there must be a token
     // in the header.
     const axiosInstance = axios.create({
       headers: {'authorization': token}
     })
-
+simply 
     // Make a GET request to to retrieve all of the active chats.
     axiosInstance.get('https://miningforgoldstein.me/allChat')
       .then(({ data }) => {
         if (data.length === 0) {
-          // If the data array is empty, return.
+          // If the data array is empty, simply return.
           renderListSuccess(dispatch, data)
         } else {
           // If the data array is not empty, retrive all of the IDs
@@ -185,12 +185,13 @@ export const renderList = ({ token, userId }) => {
             })
           })
 
+          // Use this variable as a counter.
           let itemsProcessed = 0
 
           // Do a for-loop for each other users ID.
           otherUserIds.forEach((id, index) => {
             // Make a GET request for each other users ID, and add their firstname,
-            // lastname, and id into each entry of the users entry.
+            // lastname, and id into each entry of the response.
             axiosInstance.get(`https://miningforgoldstein.me/userNameById?id=${id}`)
               .then(result => {
                 itemsProcessed++
@@ -230,6 +231,7 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
   const { chatRenderFail } = errorMsgs
 
   return (dispatch) => {
+    // Indicate to the user that the focus chat is being rendered.
     dispatch({ type: RENDER_CHAT })
 
     // To make an HTTP request, there must be a token
@@ -238,13 +240,20 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
       headers: {'authorization': token}
     })
 
+    // Empty variable that will be filled with the appropriate
+    // data to be send to the client's state.
     let msgs = GLOBAL.EMPTY_STATE
 
-    // Make a GET request to retrieve chat with current user.
+    // Make a GET request to retrieve chat with current user, using the user's ID.
     axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
       .then(result => {
+        // If the GET request is successful, extract any data of the user's from
+        // local storage.
         GLOBAL.storage.getAllDataForKey(`${otherUserId}:${userId}-messages`)
           .then(res => {
+            // If there are any data from local storage, sort out all the messages
+            // that are from the client and the user that wants to be talked to
+            // and put it in msgs - which is an array.
             let count = 0;
             msgs = result.data.map(msg => {
               if(msg.receiverID === otherUserId) {
@@ -256,8 +265,9 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
 
             // If GET request is successful, find the other user's public
             // key in local storage.
-            GLOBAL.storage.load({ key: `${otherUserId}-${GLOBAL.PUBLIC_KEY_STRING}` })
+            GLOBAL.storage.load({ key: `${otherUserId}:${userId}-${GLOBAL.PUBLIC_KEY_STRING}` })
               .then(({ publicKey }) => {
+                // Indicate to the user that chat render is done.
                 dispatch({ type: RENDER_CHAT_DONE })
 
                 // If public key is in local storage, then dispatch
@@ -275,11 +285,12 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
                 Actions.focusChat({title: otherUserFirstname})
               })
               .catch((err) => {
+                // Indicate to the user that chat render is done.
                 dispatch({ type: RENDER_CHAT_DONE })
 
                 // If public key is not in local storage, then dispatch
                 // a response to change states appropriately, but without
-                // public key.
+                // the public key.
                 dispatch({
                   type: RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
                   payload: {
@@ -293,14 +304,17 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
               })
           })
           .catch(() => {
+            // If there are no data from local storage, simply return
+            // all the messages from the GET request.
             msgs = result.data.map(msg => {
               return decryptor(JSON.parse(msg.message), privateKey)
             })
 
             // If GET request is successful, find the other user's public
             // key in local storage.
-            GLOBAL.storage.load({ key: `${otherUserId}-${GLOBAL.PUBLIC_KEY_STRING}` })
+            GLOBAL.storage.load({ key: `${otherUserId}:${userId}-${GLOBAL.PUBLIC_KEY_STRING}` })
               .then(({ publicKey }) => {
+                // Indicate to the user that chat render is done.
                 dispatch({ type: RENDER_CHAT_DONE })
 
                 // If public key is in local storage, then dispatch
@@ -318,11 +332,12 @@ export const focusChat = ({ otherUserId, userId, token, otherUserFirstname, priv
                 Actions.focusChat({title: otherUserFirstname})
               })
               .catch((err) => {
+                // Indicate to the user that chat render is done.
                 dispatch({ type: RENDER_CHAT_DONE })
 
                 // If public key is not in local storage, then dispatch
                 // a response to change states appropriately, but without
-                // public key.
+                // the public key.
                 dispatch({
                   type: RENDER_CHAT_SUCCESS_WITH_NO_PUBLIC_KEY,
                   payload: {
@@ -376,25 +391,33 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey, priv
       // Dispatch an client error response
       // if there is no public key.
       dispatch({
-        type: EMPTY_KEYS,
+        type: MESSAGE_SENT_FAIL,
         payload: emptyKeys
       })
     } else if (input === '' ) {
+      // Dispatch a failed message if there is no
+      // message to be sent.
       dispatch({
         type: MESSAGE_SENT_FAIL,
         payload: emptyInput
       })
     } else {
+      // Create a new variable object for the
+      // input that the client sent.
       const newMessage = {
         message: input,
         date: Date.now()
       }
 
+      // Append the new message object into the
+      // list of messages.
       messages.push(newMessage)
 
-      // If PUT request is successful, dispatch the appropriate response.
+      // Clears out input.
       dispatch({ type: MESSAGE_SENT_SUCCESSFUL })
 
+      // Dispatch the messages and its data source,
+      // as the payloads.
       dispatch({
         type: RENDER_CHAT_SUCCESS,
         payload: {
@@ -417,6 +440,7 @@ export const sendMessage = ({ input, otherUserId, userId, token, publicKey, priv
       // Make a PUT request to add new message to chat.
       axiosInstance.put(`https://miningforgoldstein.me/chat`, { otherUserID: otherUserId, message: encryptedObject })
         .then(() => {
+          // If PUT request is successful, save the sent message into local storage.
           GLOBAL.storage.load({ key: `${otherUserId}:${userId}-count` })
             .then(({ count }) => {
               GLOBAL.storage.save({
@@ -481,14 +505,14 @@ export const publicKeyFileNameChanged = (text) => {
 * 
 * @param {object} = { publicKeyFileName:String, otherUserId:String }
 */   
-export const findPublicKey = ({ publicKeyFileName, otherUserId }) => {
+export const findPublicKey = ({ userId, publicKeyFileName, otherUserId }) => {
   // Extract error messages from object.
   const { emptyKeyInput, keyFindFail } = errorMsgs
 
   return (dispatch) => {
-    // Send an action type of FIND_KEYS to indicate
+    // Send an action type of FIND_PUBLIC_KEY to indicate
     // that request is being processed.
-    dispatch({ type: FIND_KEYS })
+    dispatch({ type: FIND_PUBLIC_KEY })
 
     if (publicKeyFileName === GLOBAL.EMPTY_STATE) {
       // Send the appropriate client error response
@@ -500,7 +524,7 @@ export const findPublicKey = ({ publicKeyFileName, otherUserId }) => {
         .then((publicKey) => {
           // If the file is found, save it in local storage.
           GLOBAL.storage.save({
-            key: `${otherUserId}-${GLOBAL.PUBLIC_KEY_STRING}`,
+            key: `${otherUserId}:${userId}-${GLOBAL.PUBLIC_KEY_STRING}`,
             rawData: { publicKey },
             expires: null
           })
@@ -514,6 +538,134 @@ export const findPublicKey = ({ publicKeyFileName, otherUserId }) => {
           findPublicKeyFail(dispatch, keyFindFail)
         })
     }
+  }
+}
+
+/*
+* Interval function that constantly checks and updates any messages from the
+* HTTP request.
+* 
+* @param {object} = { token:String, otherUserId:String, userId:String, privateKey:String }
+*/  
+export const checkAndUpdateMessages = ({ token, otherUserId, userId, privateKey }) =>{
+  // Extract error messages from object.
+  const { chatRenderFail } = errorMsgs
+  
+  return (dispatch) => {
+    // Indicate to the user that chat is being updated.
+    dispatch({ type: UPDATE_CHAT })
+
+    // To make an HTTP request, there must be a token
+    // in the header.
+    const axiosInstance = axios.create({
+      headers: {'authorization': token}
+    })
+
+    // Empty variable that will be filled with the appropriate
+    // data to be send to the client's state.
+    let msgs = GLOBAL.EMPTY_STATE
+
+    // Make a GET request to retrieve chat with current user, using the user's ID.
+    axiosInstance.get(`https://miningforgoldstein.me/chat/${otherUserId}`)
+      .then((result) => {
+        // If GET request is successful, grab all data in local storage.
+        GLOBAL.storage.getAllDataForKey(`${otherUserId}:${userId}-messages`)
+          .then(res => {
+            // If there are data in local storage, sort out the client's and
+            // the user's messages.
+            let count = 0;
+            msgs = result.data.map(msg => {
+              if(msg.receiverID === otherUserId) {
+                return res[count++]
+              } else {
+                return decryptor(JSON.parse(msg.message), privateKey)
+              }
+            })
+
+            // Indicate to the client that chat was updated successfully,
+            // with the appropriate payload.
+            dispatch({
+              type: RENDER_CHAT_SUCCESS,
+              payload: {
+                messages: msgs,
+                dataSource: new ListView.DataSource({
+                  rowHasChanged: (r1, r2) => r1 !== r2
+                }).cloneWithRows(msgs)
+              }
+            })
+          })
+          .catch(() => {
+            // If there are no data from local storage, simply return
+            // data from GET request.
+            msgs = result.data.map(msg => {
+              return decryptor(JSON.parse(msg.message), privateKey)
+            })
+
+            // Indicate to the client that chat was updated successfully,
+            // with the appropriate payload.
+            dispatch({
+              type: RENDER_CHAT_SUCCESS,
+              payload: msgs
+            })
+          })
+      })
+      .catch(() => {
+        // If GET request fails, dispatch a failed message.
+        dispatch({
+          type: RENDER_CHAT_FAIL
+          payload: chatRenderFail
+        })
+      })
+  }
+}
+
+/*
+* Sets the Focus Chat Interval ID.
+* 
+* @param {object} = { focusChatIntervalId:String }
+*/  
+export const setFocusChatIntervalId = ({ focusChatIntervalId }) => {
+  return (dispatch) => {
+    dispatch({
+      type: SET_FOCUS_CHAT_INTERVAL_ID,
+      payload: focusChatIntervalId
+    })
+  }
+}
+
+/*
+* Removes the Focus Chat Interval ID.
+* 
+* @param {object} = { focusChatIntervalId:String }
+*/  
+export const removeFocusChatIntervalId = ({ focusChatIntervalId }) => {
+  return (dispatch) => {
+    dispatch({ type: REMOVE_FOCUS_CHAT_INTERVAL_ID })
+  }
+}
+
+/*
+* Sets the Chat List Interval ID.
+* 
+* @param {object} = { chatListIntervalId:String }
+*/ 
+export const setChatListIntervalId = ({ chatListIntervalId }) => {
+  return (dispatch) => {
+    dispatch({
+      type: SET_CHAT_LIST_INTERVAL_ID,
+      payload: chatListIntervalId
+    })
+  }
+}
+
+/*
+* Removes the Chat List Interval ID.
+* 
+* @param {object} = { chatListIntervalId:String }
+*/ 
+export const removeChatListIntervalId = ({ chatListIntervalId }) => {
+  return (dispatch) => {
+    dispatch({ type: REMOVE_CHAT_LIST_INTERVAL_ID })
   }
 }
 
@@ -590,38 +742,6 @@ const findPublicKeySuccess = (dispatch, publicKey) => {
 const findPublicKeyFail = (dispatch, errorMsg) => {
   dispatch({
     type: FIND_PUBLIC_KEY_FAIL,
-    payload: errorMsg
-  })
-}
-
-/*
-* Helper function to dispatch FIND_KEYS_SUCCESS
-* type. It will return the public key to the reducer
-* states. 
-*
-* @param    {function}    dispatch
-* @param    {String}      errorMsg
-*/
-const findKeySuccess = (dispatch, publicKey) => {
-  dispatch({
-    type: FIND_KEYS_SUCCESS,
-    payload: publicKey
-  })
-
-  Actions.pop()
-}
-
-/*
-* Helper function to dispatch FIND_KEYS_FAIL
-* type. It will return the appropriate error
-* message to the user's screen.
-* 
-* @param    {function}    dispatch
-* @param    {String}      errorMsg
-*/
-const findKeyFail = (dispatch, errorMsg) => {
-  dispatch({
-    type: FIND_KEYS_FAIL,
     payload: errorMsg
   })
 }

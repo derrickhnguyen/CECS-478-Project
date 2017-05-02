@@ -3,8 +3,13 @@ import { Text, View, Image, StyleSheet } from 'react-native'
 import { Actions } from 'react-native-router-flux'
 import { BorderCard, BorderCardSection, CardSection } from './common'
 
+/*
+* Component that displays a single message item.
+*/
 class ChatItem extends Component {
+  // Main function to render Chat Item.
   render() {
+    // Extract object within the styles object.
     const { containerStyle, imageStyle, textStyle } = styles
 
     return(
@@ -20,6 +25,7 @@ class ChatItem extends Component {
   }
 }
 
+// Styles property.
 const styles = StyleSheet.create({
   containerStyle: {
     flex: 1,
@@ -39,4 +45,5 @@ const styles = StyleSheet.create({
   }
 })
 
+// Export ChatItem.js to be used for application.
 export default ChatItem
