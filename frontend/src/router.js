@@ -8,7 +8,7 @@ import ChatList from './components/ChatList'
 import ChatCreate from './components/ChatCreate'
 import FocusChat from './components/FocusChat'
 import KeyForm from './components/KeyForm'
-import { signupLeftClicked, removeFocusChatIntervalId } from './actions'
+import { signupLeftClicked, removeFocusChatIntervalId, renderList, setChatListIntervalId } from './actions'
 
 class RouterComponent extends Component {
   // Declare variables for every function in this class
@@ -28,9 +28,16 @@ class RouterComponent extends Component {
   // When Focus chat back button is clicked, the function
   // will be called, then pop out of the page.
   onFocusChatBackButtonClick() {
-    const { focusChatIntervalId } = this.props
+    const { focusChatIntervalId, token, userId } = this.props
     clearInterval(focusChatIntervalId)
     this.props.removeFocusChatIntervalId({ focusChatIntervalId })
+
+    let chatListIntervalId = setInterval(() => {
+      this.props.renderList({ token, userId })
+    }, 6000)
+
+    this.props.setChatListIntervalId({ chatListIntervalId })
+
     Actions.pop()
   }
 
@@ -120,9 +127,9 @@ const styles = {
 // Extract states from auth and focusChat reducer,
 // and use it for this page.
 const mapStateToProps = ({ auth, focusChat }) => {
-  const { hideBackImage } = auth
+  const { hideBackImage, token, userId } = auth
   const { focusChatIntervalId } = focusChat
-  return { hideBackImage, focusChatIntervalId }
+  return { hideBackImage, focusChatIntervalId, token, userId }
 }
 
 // Connects this page with redux so states can be
@@ -131,5 +138,7 @@ const mapStateToProps = ({ auth, focusChat }) => {
 // Exports router.js to be used for application.
 export default connect(mapStateToProps, {
   signupLeftClicked,
-  removeFocusChatIntervalId
+  removeFocusChatIntervalId,
+  setChatListIntervalId,
+  renderList
 })(RouterComponent)

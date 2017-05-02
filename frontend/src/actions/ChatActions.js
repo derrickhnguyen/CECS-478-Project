@@ -169,7 +169,7 @@ export const renderList = ({ token, userId }) => {
     const axiosInstance = axios.create({
       headers: {'authorization': token}
     })
-simply 
+    
     // Make a GET request to to retrieve all of the active chats.
     axiosInstance.get('https://miningforgoldstein.me/allChat')
       .then(({ data }) => {
@@ -612,7 +612,7 @@ export const checkAndUpdateMessages = ({ token, otherUserId, userId, privateKey 
       .catch(() => {
         // If GET request fails, dispatch a failed message.
         dispatch({
-          type: RENDER_CHAT_FAIL
+          type: RENDER_CHAT_FAIL,
           payload: chatRenderFail
         })
       })

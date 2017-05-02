@@ -24,14 +24,18 @@ export default (state = INITIAL_STATE, action) => {
     // else will revert back to its initial states.
     case RENDER_LIST_SUCCESS:
       return {
-        ...INITIAL_STATE,
-        listOfChats: payload
+        ...state,
+        listOfChats: payload,
+        loading: false,
+        chatListError: GLOBAL.EMPTY_STATE,
       }
     // chatListError will be set to new state. Everything
     // else will revert back to its initial states.
     case RENDER_LIST_FAIL:
       return {
         ...INITIAL_STATE,
+        listOfChats: [],
+        loading: false,
         chatListError: payload
       }
     // loading will be set to true. Everything else will
