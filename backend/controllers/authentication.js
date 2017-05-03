@@ -44,7 +44,7 @@ exports.requestSaltAndChallenge = (req, res, next) => {
     // Return a status 201, and send an object with
     // 1) the user's salt
     // 2) a challenge
-    res.status(201).send({
+    res.status(200).send({
       salt: user.salt,
       challenge: RandomString.generate()
     })
@@ -88,7 +88,7 @@ exports.validateTag = (req, res, next) => {
 
     // Return the response if the generate tag matches user's tag
     if (newTag === tag) {
-      res.status(201).send({
+      res.status(200).send({
         token: tokenForUser(user),
         firstname: user.firstname,
         lastname: user.lastname,
@@ -154,7 +154,7 @@ exports.signup = (req, res, next) => {
       console.log('id: ', user._id)
 
       // Respond to request indicating the user was created.
-      res.send({
+      res.status(200).send({
         token: tokenForUser(user),
         firstname: user.firstname,
         lastname: user.lastname,
