@@ -33,7 +33,6 @@ const INITIAL_STATE = {
 }
 
 export default (state = INITIAL_STATE, action) => {
-  console.log(action)
   const { type, payload } = action
   switch (type) {
     // messages and dataSource will be set to new states.

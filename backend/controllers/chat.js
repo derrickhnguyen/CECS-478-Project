@@ -66,7 +66,6 @@ exports.getChat = (req, res, next) => {
         if (err) {
           res.status(500).send({ error: err })
         } else if (chat) {
-          console.log('getChat: ', chat.messages)
           res.status(200).send(chat.messages)
         } else {
           res.status(422).send({ error: 'Could not find chat' })
@@ -92,7 +91,6 @@ exports.getAllChat = (req, res, next) => {
       if (err) {
         res.status(500).send({ error: err })
       } else if (chats) {
-        console.log('getAllChat: ', chats)
         res.status(200).send(chats)
       } else {
         res.status(422).send({ error: 'Could not get chats' })

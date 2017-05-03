@@ -22,7 +22,7 @@ exports.getUserIdByEmail = (req, res, next) => {
           // Send 500 status if there is an error.
           res.status(500).send({ error: err })
         } else if (user) {
-          res.status(201).send(user._id)
+          res.status(200).send(user._id)
         } else {
           res.status(422).send({ error: 'Unsuccessfully retrieved user' })
         }
@@ -55,7 +55,7 @@ exports.getUserByEmail = (req, res, next) => {
         if (err) {
           res.status(500).send({ error: err })
         } else if (user) {
-          res.status(201).send({
+          res.status(200).send({
             firstname: user.firstname,
             lastname: user.lastname,
             id: user._id
@@ -88,7 +88,7 @@ exports.getNameById = (req, res, next) => {
         if (err) {
           res.status(500).send({ error: err })
         } else if (user) {
-          res.status(201).send({
+          res.status(200).send({
             firstname: user.firstname,
             lastname: user.lastname
           })
