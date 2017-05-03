@@ -38,6 +38,9 @@ exports.requestSaltAndChallenge = (req, res, next) => {
       return res.status(422).send({ error: 'Could not find user' })
     }
 
+    console.log('salt: ', user.salt)
+    console.log('challenge: ', RandomString.generate())
+
     // Return a status 201, and send an object with
     // 1) the user's salt
     // 2) a challenge
@@ -77,6 +80,11 @@ exports.validateTag = (req, res, next) => {
 
     // Generate a new tag with the challenge and user passsword
     const newTag = CryptoJS.HmacSHA256(challenge, password).toString()
+
+    console.log('token :', tokenForUser(user))
+    console.log('firstname: ', user.firstname)
+    console.log('lastname: ', user.lastname)
+    console.log('id: ', user._id)
 
     // Return the response if the generate tag matches user's tag
     if (newTag === tag) {
@@ -139,6 +147,11 @@ exports.signup = (req, res, next) => {
       if (err) {
         return next(err)
       }
+
+      console.log('token: ', tokenForUser(user))
+      console.log('firstname: ', user.firstname)
+      console.log('lastname: ', user.lastname)
+      console.log('id: ', user._id)
 
       // Respond to request indicating the user was created.
       res.send({
