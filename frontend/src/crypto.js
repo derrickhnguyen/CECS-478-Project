@@ -31,6 +31,9 @@ exports.encryptor = (message, publicKey) => {
   const concatenatedKey = AESKey + SHA256Key
   const rsa = new RSAKey()
   rsa.setPublicString(publicKey)
+
+  // This library: react-native-rsa, by default, incorporates OAEP
+  // padding, specifically PKCS1.
   const RSACipherText = rsa.encrypt(concatenatedKey)
 
   // Object to return
